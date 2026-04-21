@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Rick & Morty – Portal Gun</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-size:18px; font-family:Arial,sans-serif; background:black; color:white; }
+
+    /* PORTAL TRANSITION CSS */
+    .portal-transition {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      background:radial-gradient(ellipse at center,
+        rgba(0,255,100,.95) 0%, rgba(0,180,60,.7) 30%,
+        rgba(0,80,20,.4) 60%, transparent 80%);
+      opacity:0; pointer-events:none;
+      transition:opacity .4s ease; z-index:9998;
+    }
+    .portal-active { opacity:1; }
+
+    /* BANNIÈRE */
+    .banner { background:#111; margin:20px auto; padding:20px; width:70%; border-radius:15px; box-shadow:0 0 20px #0f0; text-align:center; }
+    .banner h1 { font-family:'Bangers',cursive; font-size:45px; color:#7bff8b; letter-spacing:.08em; }
+    @keyframes glitch {
+      0%{transform:translate(0)} 20%{transform:translate(-2px,2px)}
+      40%{transform:translate(2px,-2px)} 60%{transform:translate(-2px,-2px)}
+      80%{transform:translate(2px,2px)} 100%{transform:translate(0)}
+    }
+    .glitch { animation:glitch .2s infinite steps(1,end); animation-play-state:paused; }
+
+    /* LAYOUT */
+    .container { display:flex; min-height:65vh; }
+    .colonne-gauche { width:35%; background:#66CC00; padding:40px; color:white; }
+    .colonne-gauche h1 { font-family:'Bangers',cursive; font-size:36px; margin-top:0; color:white; letter-spacing:.05em; }
+    .colonne-gauche h3 { color:#003b1f; font-weight:bold; margin:20px 0 8px; }
+    .colonne-gauche p { margin-bottom:14px; line-height:1.6; }
+
+    /* ✅ FOND.PNG à droite */
+    .colonne-droite {
+      width:65%;
+      background-image:url("img/fond.png");
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+    }
+
+    /* PH SCALE */
+    .ph-section { padding:40px; text-align:center; background:#111; }
+    .ph-section h2 { font-family:'Bangers',cursive; color:#7BBA86; margin-bottom:30px; font-size:35px; letter-spacing:.05em; }
+    .ligne-ph { padding:12px; color:white; margin:4px 0; font-weight:bold; display:block; text-decoration:none; transition:transform .3s, filter .2s; cursor:pointer; }
+    .ligne-ph:hover { transform:scale(1.05); filter:brightness(1.3); }
+
+    /* MINI RICK ✅ blend mode pour fond transparent */
+    #miniRick { position:fixed; bottom:20px; right:20px; width:130px; cursor:pointer; z-index:9999; mix-blend-mode:screen; transition:transform .2s; }
+    #miniRick:hover { transform:scale(1.1) rotate(-5deg); }
+    #speechBubble { position:fixed; bottom:170px; right:20px; background:#222; color:#0f0; padding:12px; border:2px solid #0f0; border-radius:10px; max-width:200px; display:none; z-index:9999; font-size:15px; line-height:1.4; }
+
+    /* CARNET */
+    .carnet { padding:40px; background:#0f0f0f; }
+    .carnet h2 { font-family:'Bangers',cursive; color:#7BFF8B; letter-spacing:.05em; margin-bottom:20px; }
+    .carnet p { margin-bottom:16px; line-height:1.6; color:#ccc; }
+    .carnet strong { color:#7BFF8B; }
+  </style>
+</head>
+<body>
+
+  <div class="portal-transition" id="portal"></div>
+  <img id="miniRick" src="img/rick.png" alt="Rick">
+  <div id="speechBubble"></div>
+
+  <div class="banner">
+    <h1 class="glitch" id="glitchTitle">Rick & Morty – Portal Gun</h1>
+  </div>
+
+  <div class="container">
+    <div class="colonne-gauche">
+      <h1>Rick & Morty – Portal Gun</h1>
+      <p>Morty… Moooorty… fais gaffe où tu mets les pieds. Si tu glisses encore, on finit dans une dimension où les croissants ont des jambes.</p>
+      <h3>Journal d'anecdotes – épisode du jour</h3>
+      <p>Aujourd'hui Rick a dit que la gravité "c'était chiant", donc il l'a désactivée. Jerry flotte au plafond depuis 2h. Personne n'a pensé à le décrocher.</p>
+      <p>Morty a demandé pourquoi il faisait toutes les missions dangereuses. Rick a répondu : "Parce que t'es le seul assez con pour survivre par accident."</p>
+      <p>Beth voulait un dîner normal. Rick a ramené 2 parasites cosmiques. Ils vivent ici maintenant.</p>
+      <p>Summer a ouvert une boutique de portails dimensionnels. Elle refuse tous les remboursements. Girlboss intergalactique.</p>
+    </div>
+    <div class="colonne-droite"></div>
+  </div>
+
+  <div class="ph-section">
+    <h2>Échelle de pH du liquide du Portal Gun</h2>
+
+    <a href="dimension-narnia.html"     class="ligne-ph" style="background:#003300;">pH 1  – On va finir à Narnia.</a>
+    <a href="dimension-acid.html"       class="ligne-ph" style="background:#0a3d00;">pH 2  – Si ça touche ta peau, tu changes de dimension.</a>
+    <a href="dimension-roche.html"      class="ligne-ph" style="background:#155500;">pH 3  – Ça dissout un caillou en 4 secondes.</a>
+    <a href="dimension-mensonge.html"   class="ligne-ph" style="background:#1f6600;">pH 4  – Rick dit "ça pique juste un peu". Il ment.</a>
+    <a href="dimension-lacets.html"     class="ligne-ph" style="background:#267300;">pH 5  – Ça fait fondre les lacets mais pas les chaussures.</a>
+    <a href="dimension-gravite.html"    class="ligne-ph" style="background:#2e7f00;">pH 6  – Morty a pleuré quand il a vu la fumée.</a>
+    <a href="dimension-neutre.html"     class="ligne-ph" style="background:#339900;">pH 7  – Zone neutre : ça explose juste parfois.</a>
+    <a href="dimension-parasite.html"   class="ligne-ph" style="background:#40a600;">pH 8  – Rick dit que c'est "portable". Pas sûr.</a>
+    <a href="dimension-picotement.html" class="ligne-ph" style="background:#4db300;">pH 9  – Ça pique mais genre… ok-ish.</a>
+    <a href="dimension-sourcils.html"   class="ligne-ph" style="background:#5abf00;">pH 10 – Ça brûle les sourcils, pas les yeux.</a>
+    <a href="dimension-stable.html"     class="ligne-ph" style="background:#66cc00;">pH 11 – Un peu trop stable, ça inquiète Rick.</a>
+    <a href="dimension-garage.html"     class="ligne-ph" style="background:#73d900;">pH 12 – Summer l'utilise comme démaquillant.</a>
+    <a href="dimension-bizarre.html"    class="ligne-ph" style="background:#85e000;">pH 13 – Ça sent bizarre mais ça va.</a>
+    <a href="dimension-the.html"        class="ligne-ph" style="background:#99ea00;color:#003300;">pH 14 – À ce niveau on appelle ça du thé vert cosmos.</a>
+    <a href="dimension-pisse.html"      class="ligne-ph" style="background:#b2ff66;color:#003300;">pH 15 – C'est de la pisse là.</a>
+
+    <div class="carnet">
+      <h2>Carnet Multivers de Rick</h2>
+      <p><strong>Jour 1</strong> — Rick voulait tester un réglage. Le portail s'est ouvert au mauvais endroit. Garage détruit, Morty traumatisé, Rick agacé.</p>
+      <p><strong>Jour 2</strong> — Le portail refuse de rouvrir. Rick prétend que c'est "volontaire". Morty n'y croit pas.</p>
+      <p><strong>Jour 3</strong> — Le portail refonctionne dans un supermarché bizarre. Tout est normal sauf les clients. Et les produits.</p>
+      <p><strong>Jour 4</strong> — Ils rentrent. Même canapé. Mauvaise timeline.</p>
+      <p><strong>Jour 5</strong> — Rick répare la Portal Gun. Morty note tout dans le carnet (mal).</p>
+      <p><strong>Jour 9</strong> — Sans prévenir : Rick est un cornichon. Morty ne pose même plus de questions.</p>
+      <p><strong>Jour 15</strong> — Ils rentrent enfin. Rick sourit. Mauvais signe.</p>
+    </div>
+  </div>
+
+  <script>
+    // Transition portail pour tous les liens pH
+    const portal = document.getElementById("portal");
+    document.querySelectorAll("a.ligne-ph").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const dest = link.href;
+        portal.classList.add("portal-active");
+        setTimeout(() => { window.location.href = dest; }, 400);
+      });
+    });
+
+    // Glitch titre
+    const title = document.getElementById("glitchTitle");
+    setInterval(() => {
+      title.style.animationPlayState = "running";
+      setTimeout(() => title.style.animationPlayState = "paused", 150);
+    }, Math.random() * 1200 + 800);
+
+    // Rick insultes
+    const bubble = document.getElementById("speechBubble");
+    const insults = [
+      "Morty t'es nul, mais ce site est pas si pire au final.",
+      "Wooow, t'as codé ça sans exploser le PC ? Mouai, basique.",
+      "Ton HTML est moins dégueu que celui de Jerry.",
+      "Je sais pas comment tu arrives à faire quelque chose de ta vie.",
+      "C'est pas mal… pour un humain lambda."
+    ];
+    setInterval(() => {
+      bubble.innerText = insults[Math.floor(Math.random() * insults.length)];
+      bubble.style.display = "block";
+      setTimeout(() => bubble.style.display = "none", 3000);
+    }, Math.random() * 3000 + 4000);
+  </script>
+</body>
+</html>

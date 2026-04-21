@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Sourcils – pH 10</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#150a00,#201000);color:#ffcc44;font-family:'Nunito',sans-serif;min-height:100vh;padding:20px;overflow:hidden;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:14px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#cc8800;color:black;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.2rem;color:#ffcc44;letter-spacing:.07em;margin-bottom:2px;}
+    .sub{color:#886622;margin-bottom:10px;font-size:.9rem;}
+    .hud{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+    .hud-box{padding:7px 14px;border-radius:8px;background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.2);font-weight:900;color:#ffcc44;font-size:.95rem;}
+    #game-area{width:100%;height:calc(100vh - 180px);position:relative;background:rgba(0,0,0,.3);border-radius:12px;overflow:hidden;cursor:crosshair;}
+    #target{position:absolute;border-radius:50%;background:radial-gradient(circle,#ffcc00,#ff6600);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;border:3px solid #fff4;transition:background .2s;}
+    #target:hover{background:radial-gradient(circle,#fff700,#ff8800);}
+    #overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;border-radius:12px;}
+    #overlay h2{font-family:'Bangers',cursive;font-size:2.2rem;color:#ffcc44;letter-spacing:.06em;margin-bottom:10px;}
+    #overlay p{color:#ffcc88;margin-bottom:18px;line-height:1.5;max-width:400px;}
+    .play-btn{padding:12px 28px;background:#cc8800;border:none;border-radius:8px;color:black;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;font-size:1rem;}
+    .miss-flash{position:absolute;inset:0;background:rgba(255,0,0,.2);border-radius:12px;pointer-events:none;opacity:0;transition:opacity .15s;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>🔥 Dimension Sourcils</h1>
+  <p class="sub">pH 10 — Ça brûle les sourcils mais pas les yeux. La cible rapetisse. Clique dessus avant qu'elle disparaisse.</p>
+  <div class="hud">
+    <div class="hud-box">Score : <span id="score-d">0</span></div>
+    <div class="hud-box">Manqués : <span id="miss-d">0</span></div>
+    <div class="hud-box">Niveau : <span id="level-d">1</span></div>
+  </div>
+  <div id="game-area">
+    <div id="target" style="width:80px;height:80px">🔥</div>
+    <div class="miss-flash" id="miss-flash"></div>
+    <div id="overlay">
+      <h2>🎯 Précision Maximale</h2>
+      <p>La cible rétrécit et disparaît si tu rates.<br>3 ratés = terminé. La cible accélère à chaque point !</p>
+      <button class="play-btn" id="start-btn">Jouer</button>
+    </div>
+  </div>
+
+  <script>
+    let score=0,misses=0,size=80,running=false,shrinkInt,disappearTimeout;
+    const target=document.getElementById('target');
+    const area=document.getElementById('game-area');
+    const overlay=document.getElementById('overlay');
+    const flash=document.getElementById('miss-flash');
+
+    function updateHUD(){
+      document.getElementById('score-d').textContent=score;
+      document.getElementById('miss-d').textContent=misses;
+      document.getElementById('level-d').textContent=Math.floor(score/3)+1;
+    }
+
+    function placeTarget(){
+      if(!running)return;
+      size=Math.max(30, 80-score*3);
+      target.style.width=size+'px';
+      target.style.height=size+'px';
+      const maxX=area.clientWidth-size;
+      const maxY=area.clientHeight-size;
+      target.style.left=Math.random()*maxX+'px';
+      target.style.top=Math.random()*maxY+'px';
+      target.style.opacity='1';
+      clearTimeout(disappearTimeout);
+      const timeLimit=Math.max(800, 2500-score*100);
+      disappearTimeout=setTimeout(()=>{
+        if(running){miss();}
+      },timeLimit);
+    }
+
+    function miss(){
+      misses++;
+      updateHUD();
+      flash.style.opacity='1';
+      setTimeout(()=>flash.style.opacity='0',200);
+      if(misses>=3){endGame();return;}
+      placeTarget();
+    }
+
+    target.addEventListener('click',e=>{
+      if(!running)return;
+      e.stopPropagation();
+      clearTimeout(disappearTimeout);
+      score++;
+      updateHUD();
+      placeTarget();
+    });
+
+    area.addEventListener('click',()=>{if(running)miss();});
+
+    function startGame(){
+      score=0;misses=0;size=80;running=true;
+      overlay.style.display='none';
+      updateHUD();
+      placeTarget();
+    }
+
+    function endGame(){
+      running=false;
+      clearTimeout(disappearTimeout);
+      const v=score>=20?'🎯 Tir de sniper. Rick t\'engagerait.':score>=10?'⚡ Bon niveau. Les sourcils sont saufs.':score>=5?'👍 Pas mal pour un débutant.':'💀 Tes sourcils sont partis. Rick aussi.';
+      overlay.innerHTML=`<h2>Terminé !</h2><p>Score : <strong>${score}</strong><br>${v}</p><button class="play-btn" onclick="location.reload()">Rejouer</button>`;
+      overlay.style.display='flex';
+    }
+
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  </script>
+</body>
+</html>

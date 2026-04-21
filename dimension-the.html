@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Thé – pH 14</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#080d00,#121a00);color:#ccee66;font-family:'Nunito',sans-serif;min-height:100vh;padding:20px;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:18px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#88aa00;color:black;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#bbdd44;letter-spacing:.07em;margin-bottom:4px;}
+    .sub{color:#556600;margin-bottom:24px;font-size:.95rem;}
+    .game-box{max-width:480px;}
+    .tea-cup{font-size:6rem;text-align:center;margin:10px 0;animation:float 3s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .instruction{text-align:center;color:#aabb44;margin-bottom:18px;font-size:1.05rem;line-height:1.5;min-height:48px;}
+    .input-row{display:flex;gap:10px;margin-bottom:16px;justify-content:center;}
+    #guess-input{padding:14px;width:140px;background:rgba(0,0,0,.4);border:2px solid rgba(136,170,0,.3);border-radius:10px;color:white;font-size:1.3rem;font-family:'Nunito',sans-serif;text-align:center;font-weight:900;}
+    #guess-input:focus{outline:none;border-color:#bbdd44;}
+    .btn-guess{padding:14px 20px;background:#88aa00;border:none;border-radius:10px;color:black;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;font-size:1rem;}
+    .hint-display{text-align:center;font-size:1.8rem;font-weight:900;min-height:40px;margin-bottom:10px;}
+    .attempts{text-align:center;color:#667700;font-size:.9rem;margin-bottom:12px;}
+    .history{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;}
+    .hist-item{padding:5px 10px;border-radius:6px;font-size:.85rem;font-weight:700;}
+    .hist-high{background:rgba(255,100,100,.15);color:#ff9999;border:1px solid rgba(255,100,100,.2);}
+    .hist-low{background:rgba(100,200,255,.15);color:#88ccff;border:1px solid rgba(100,200,255,.2);}
+    .btn-new{padding:12px 24px;background:#88aa00;border:none;border-radius:8px;color:black;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;display:none;margin-top:10px;}
+    .win-msg{text-align:center;font-family:'Bangers',cursive;font-size:2rem;color:#bbdd44;letter-spacing:.05em;display:none;}
+    .win-sub{text-align:center;color:#aabb44;margin:8px 0 16px;display:none;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>🍵 Dimension Thé Vert Cosmos</h1>
+  <p class="sub">pH 14 — À ce niveau on appelle ça du thé. Rick a pensé un nombre entre 1 et 100. Trouve-le.</p>
+
+  <div class="game-box">
+    <div class="tea-cup">🍵</div>
+    <div class="instruction" id="instruction">Rick a pensé un nombre entre 1 et 100. Combien de tentatives ?</div>
+    <div class="hint-display" id="hint-disp"></div>
+    <div class="attempts" id="attempts-disp"></div>
+    <div class="history" id="history"></div>
+    <div class="input-row">
+      <input type="number" id="guess-input" min="1" max="100" placeholder="?">
+      <button class="btn-guess" id="guess-btn">Deviner</button>
+    </div>
+    <div class="win-msg" id="win-msg"></div>
+    <div class="win-sub" id="win-sub"></div>
+    <div style="text-align:center">
+      <button class="btn-new" id="new-btn">Nouveau nombre</button>
+    </div>
+  </div>
+
+  <script>
+    let secret, attempts, gameOver;
+
+    function newGame(){
+      secret=Math.floor(Math.random()*100)+1;
+      attempts=0; gameOver=false;
+      document.getElementById('instruction').textContent='Rick a pensé un nombre entre 1 et 100.';
+      document.getElementById('hint-disp').textContent='';
+      document.getElementById('attempts-disp').textContent='';
+      document.getElementById('history').innerHTML='';
+      document.getElementById('win-msg').style.display='none';
+      document.getElementById('win-sub').style.display='none';
+      document.getElementById('new-btn').style.display='none';
+      document.getElementById('guess-btn').disabled=false;
+      document.getElementById('guess-input').value='';
+      document.getElementById('guess-input').disabled=false;
+      document.getElementById('guess-input').focus();
+    }
+
+    function guess(){
+      if(gameOver)return;
+      const val=parseInt(document.getElementById('guess-input').value);
+      if(!val||val<1||val>100){document.getElementById('hint-disp').textContent='Entre 1 et 100 !';return;}
+      attempts++;
+      document.getElementById('attempts-disp').textContent=`Tentatives : ${attempts}`;
+      const hist=document.getElementById('history');
+      const dot=document.createElement('div');
+      if(val===secret){
+        gameOver=true;
+        dot.className='hist-item hist-low';dot.textContent=val+'✓';hist.appendChild(dot);
+        document.getElementById('hint-disp').textContent='';
+        const v=attempts<=5?'🏆 Rick est stupéfait. "T\'as triché ou t\'es vraiment comme ça ?"':attempts<=10?'☕ Trouvé ! Rick sippe son thé et dit "satisfaisant".':attempts<=20?'👍 Long mais correct. Rick a bu 3 tasses en attendant.':'😅 Enfin… Rick dormait depuis longtemps.';
+        document.getElementById('win-msg').textContent=`Trouvé en ${attempts} coups !`;
+        document.getElementById('win-msg').style.display='block';
+        document.getElementById('win-sub').textContent=v;
+        document.getElementById('win-sub').style.display='block';
+        document.getElementById('new-btn').style.display='inline-block';
+        document.getElementById('guess-btn').disabled=true;
+        document.getElementById('guess-input').disabled=true;
+      }else{
+        const higher=val<secret;
+        dot.className=`hist-item ${higher?'hist-low':'hist-high'}`;
+        dot.textContent=val+(higher?'↑':'↓');
+        hist.appendChild(dot);
+        document.getElementById('hint-disp').textContent=higher?'⬆️ C\'est plus !':'⬇️ C\'est moins !';
+        document.getElementById('instruction').textContent=higher?`${val} est trop petit. Cherche plus haut.`:`${val} est trop grand. Cherche plus bas.`;
+      }
+      document.getElementById('guess-input').value='';
+      document.getElementById('guess-input').focus();
+    }
+
+    document.getElementById('guess-btn').addEventListener('click',guess);
+    document.getElementById('guess-input').addEventListener('keydown',e=>{if(e.key==='Enter')guess();});
+    document.getElementById('new-btn').addEventListener('click',newGame);
+    newGame();
+  </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Bizarre – pH 13</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0a000f,#0f0020);color:#ddaaff;font-family:'Nunito',sans-serif;min-height:100vh;padding:20px;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:18px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#6600aa;color:white;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#bb66ff;letter-spacing:.07em;margin-bottom:4px;}
+    .sub{color:#663388;margin-bottom:22px;font-size:.95rem;}
+    .box{max-width:520px;}
+    .hud{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+    .hb{padding:8px 14px;border-radius:8px;background:rgba(102,0,170,.1);border:1px solid rgba(102,0,170,.3);font-weight:900;color:#bb66ff;}
+    .scrambled{font-family:'Bangers',cursive;font-size:3.5rem;color:#cc88ff;text-align:center;letter-spacing:.3em;margin-bottom:12px;background:rgba(0,0,0,.3);border-radius:12px;padding:18px 10px;border:1px solid rgba(102,0,170,.3);}
+    .hint{text-align:center;color:#886699;font-size:.9rem;margin-bottom:16px;font-style:italic;}
+    .input-row{display:flex;gap:10px;margin-bottom:14px;}
+    #answer-input{flex:1;padding:14px;background:rgba(0,0,0,.4);border:2px solid rgba(102,0,170,.3);border-radius:10px;color:white;font-size:1.1rem;font-family:'Nunito',sans-serif;text-transform:uppercase;}
+    #answer-input:focus{outline:none;border-color:#bb66ff;}
+    .submit-btn{padding:14px 20px;background:#6600aa;border:none;border-radius:10px;color:white;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;}
+    .feedback{padding:12px;border-radius:8px;margin-bottom:12px;font-weight:700;display:none;}
+    .feedback.correct{background:rgba(0,200,0,.15);color:#88ff88;border:1px solid rgba(0,200,0,.3);}
+    .feedback.wrong{background:rgba(200,0,0,.15);color:#ff8888;border:1px solid rgba(200,0,0,.3);}
+    .next-btn{padding:10px 22px;background:#6600aa;border:none;border-radius:8px;color:white;font-weight:900;cursor:pointer;display:none;font-family:'Nunito',sans-serif;}
+    .skip-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:10px 16px;border-radius:8px;color:#aaa;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.9rem;}
+    .end-box{text-align:center;display:none;background:rgba(0,0,0,.4);border-radius:14px;padding:24px;border:1px solid rgba(102,0,170,.3);}
+    .end-box h2{font-family:'Bangers',cursive;font-size:2rem;color:#bb66ff;letter-spacing:.06em;margin-bottom:10px;}
+    .end-box p{color:#ddaaff;margin-bottom:16px;line-height:1.5;}
+    .restart{padding:10px 22px;background:#6600aa;border:none;border-radius:8px;color:white;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>🌀 Dimension Bizarre</h1>
+  <p class="sub">pH 13 — Ça sent bizarre mais ça va. Les mots sont mélangés. Retrouve-les avant que la dimension te digère.</p>
+
+  <div class="box">
+    <div class="hud">
+      <div class="hb">Mot : <span id="q-num">1</span>/8</div>
+      <div class="hb">Score : <span id="score-d">0</span></div>
+    </div>
+    <div id="game-screen">
+      <div class="scrambled" id="scrambled-word"></div>
+      <div class="hint" id="hint-text"></div>
+      <div class="input-row">
+        <input type="text" id="answer-input" placeholder="Ta réponse…" autocomplete="off">
+        <button class="submit-btn" id="submit-btn">→</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="next-btn" id="next-btn">Suivant →</button>
+        <button class="skip-btn" id="skip-btn">Passer</button>
+      </div>
+    </div>
+    <div class="end-box" id="end-box">
+      <h2 id="end-title"></h2>
+      <p id="end-text"></p>
+      <button class="restart" onclick="init()">Rejouer</button>
+    </div>
+  </div>
+
+  <script>
+    const WORDS=[
+      {w:'PORTAIL',hint:'Ce que Rick utilise pour voyager'},
+      {w:'MORTY',hint:'Le partenaire préféré (et seul) de Rick'},
+      {w:'MULTIVERS',hint:'Des univers en quantité infinie'},
+      {w:'CORNICHON',hint:'La transformation la plus célèbre de Rick'},
+      {w:'PARASITE',hint:'Ces créatures qui créent de faux souvenirs'},
+      {w:'DIMENSION',hint:'Une coordonnée dans le multivers'},
+      {w:'MINECRAFT',hint:'Un métavers créatif bien connu'},
+      {w:'METAVERS',hint:'Des mondes virtuels multiples'},
+    ];
+
+    function shuffle(s){return s.split('').sort(()=>Math.random()-.5).join('');}
+
+    let cur=0,score=0;
+
+    function init(){
+      cur=0;score=0;
+      document.getElementById('end-box').style.display='none';
+      document.getElementById('game-screen').style.display='block';
+      render();
+    }
+
+    function render(){
+      document.getElementById('q-num').textContent=cur+1;
+      document.getElementById('score-d').textContent=score;
+      let scr=shuffle(WORDS[cur].w);
+      while(scr===WORDS[cur].w)scr=shuffle(WORDS[cur].w);
+      document.getElementById('scrambled-word').textContent=scr;
+      document.getElementById('hint-text').textContent='Indice : '+WORDS[cur].hint;
+      document.getElementById('answer-input').value='';
+      document.getElementById('feedback').style.display='none';
+      document.getElementById('next-btn').style.display='none';
+      document.getElementById('skip-btn').style.display='inline-block';
+      document.getElementById('answer-input').disabled=false;
+      document.getElementById('submit-btn').disabled=false;
+      document.getElementById('answer-input').focus();
+    }
+
+    function checkAnswer(){
+      const val=document.getElementById('answer-input').value.trim().toUpperCase();
+      const fb=document.getElementById('feedback');
+      document.getElementById('answer-input').disabled=true;
+      document.getElementById('submit-btn').disabled=true;
+      document.getElementById('skip-btn').style.display='none';
+      if(val===WORDS[cur].w){
+        score++;
+        document.getElementById('score-d').textContent=score;
+        fb.textContent='✅ Exact ! La dimension s\'apaise légèrement.';
+        fb.className='feedback correct';
+      }else{
+        fb.textContent=`❌ Raté. Le mot était : ${WORDS[cur].w}. Rick est déçu.`;
+        fb.className='feedback wrong';
+      }
+      fb.style.display='block';
+      const nb=document.getElementById('next-btn');
+      nb.style.display='inline-block';
+      nb.textContent=cur<WORDS.length-1?'Suivant →':'Résultat';
+    }
+
+    document.getElementById('submit-btn').addEventListener('click',checkAnswer);
+    document.getElementById('answer-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+    document.getElementById('skip-btn').addEventListener('click',()=>{
+      document.getElementById('answer-input').disabled=true;
+      document.getElementById('submit-btn').disabled=true;
+      document.getElementById('skip-btn').style.display='none';
+      const fb=document.getElementById('feedback');
+      fb.textContent=`Passé. Le mot était : ${WORDS[cur].w}.`;
+      fb.className='feedback wrong';fb.style.display='block';
+      document.getElementById('next-btn').style.display='inline-block';
+    });
+    document.getElementById('next-btn').addEventListener('click',()=>{
+      cur++;
+      if(cur<WORDS.length){render();}
+      else{
+        document.getElementById('game-screen').style.display='none';
+        const end=document.getElementById('end-box');
+        end.style.display='block';
+        const v=score>=7?'🧠 Vocabulaire interdimensionnel maximal. Rick t\'engagerait comme traducteur.':score>=5?'👌 Pas mal. Tu maîtrises les mots du multivers.':'🌀 La dimension t\'a un peu absorbé. Réessaie.';
+        document.getElementById('end-title').textContent=`${score}/8 mots trouvés`;
+        document.getElementById('end-text').textContent=v;
+      }
+    });
+    init();
+  </script>
+</body>
+</html>

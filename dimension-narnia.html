@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Narnia – Quiz de survie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: radial-gradient(ellipse at top, #001a06 0%, #000d02 60%, #000 100%);
+      color:#b2ffcc; font-family:'Nunito',sans-serif;
+      min-height:100vh; padding:30px 20px;
+    }
+
+    .retour {
+      display:inline-block; padding:10px 20px; margin-bottom:24px;
+      background:#66CC00; color:black; font-weight:900;
+      border-radius:8px; text-decoration:none; transition:transform .15s;
+    }
+    .retour:hover { transform:translateY(-2px); }
+
+    h1 {
+      font-family:'Bangers',cursive; font-size:3rem;
+      color:#7bff8b; letter-spacing:.08em;
+      text-shadow:0 0 30px rgba(0,255,80,.5);
+      margin-bottom:8px;
+    }
+
+    .subtitle { color:#88ccaa; margin-bottom:30px; font-size:1.05rem; }
+
+    /* QUIZ CONTAINER */
+    .quiz-box {
+      max-width:680px; margin:0 auto;
+      background:rgba(0,30,10,.7); border:1px solid rgba(102,204,0,.3);
+      border-radius:16px; padding:28px;
+    }
+
+    .progress { display:flex; gap:8px; margin-bottom:24px; }
+    .progress-dot {
+      flex:1; height:6px; border-radius:999px;
+      background:rgba(255,255,255,.15); transition:background .3s;
+    }
+    .progress-dot.done { background:#66cc00; }
+    .progress-dot.current { background:#b2ff66; animation:pulse .8s ease-in-out infinite alternate; }
+    @keyframes pulse { from{opacity:.6} to{opacity:1} }
+
+    .question-num { color:#66cc00; font-weight:900; font-size:.9rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px; }
+    .question-text { font-size:1.3rem; font-weight:700; margin-bottom:20px; color:white; line-height:1.4; }
+
+    .options { display:grid; gap:10px; }
+    .option {
+      padding:14px 18px; border-radius:10px;
+      border:2px solid rgba(102,204,0,.25);
+      background:rgba(0,0,0,.4); cursor:pointer;
+      font-size:1rem; font-family:'Nunito',sans-serif;
+      color:#b2ffcc; text-align:left;
+      transition:all .15s ease;
+    }
+    .option:hover { border-color:#66cc00; background:rgba(102,204,0,.12); transform:translateX(4px); }
+    .option.correct { border-color:#66cc00; background:rgba(0,255,80,.15); color:#7bff8b; }
+    .option.wrong { border-color:#ff4444; background:rgba(255,0,0,.1); color:#ff8888; }
+    .option:disabled { cursor:not-allowed; }
+
+    .feedback {
+      margin-top:16px; padding:14px; border-radius:10px;
+      background:rgba(0,0,0,.35); font-style:italic;
+      color:#9eddbb; display:none; line-height:1.5;
+    }
+
+    .next-btn {
+      margin-top:18px; padding:12px 28px;
+      background:#66cc00; border:none; border-radius:8px;
+      font-weight:900; font-size:1rem; cursor:pointer;
+      display:none; transition:transform .15s;
+    }
+    .next-btn:hover { transform:translateY(-2px); }
+
+    /* RÉSULTAT */
+    .result-box { text-align:center; display:none; }
+    .result-box h2 { font-family:'Bangers',cursive; font-size:2.5rem; letter-spacing:.06em; margin-bottom:12px; }
+    .score-circle {
+      width:120px; height:120px; border-radius:50%;
+      border:4px solid #66cc00; margin:20px auto;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2.5rem; font-weight:900;
+      background:rgba(0,30,10,.8);
+      box-shadow:0 0 30px rgba(102,204,0,.4);
+    }
+    .verdict { font-size:1.2rem; line-height:1.6; margin:16px 0; color:#b2ffcc; }
+    .restart-btn {
+      padding:12px 28px; background:#66cc00; border:none;
+      border-radius:8px; font-weight:900; font-size:1rem;
+      cursor:pointer; transition:transform .15s;
+    }
+    .restart-btn:hover { transform:translateY(-2px); }
+  </style>
+</head>
+<body>
+
+  <a href="rick_morty.html" class="retour">← Retour au portail</a>
+
+  <h1>🦁 Dimension Narnia</h1>
+  <p class="subtitle">pH 1 — Trop acide. Rick te souhaite bonne chance. Il ment.</p>
+
+  <div class="quiz-box">
+    <div class="progress" id="progress"></div>
+
+    <!-- QUIZ -->
+    <div id="quiz-screen">
+      <div class="question-num" id="q-num"></div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="q-options"></div>
+      <div class="feedback" id="q-feedback"></div>
+      <button class="next-btn" id="next-btn">Question suivante →</button>
+    </div>
+
+    <!-- RÉSULTAT -->
+    <div class="result-box" id="result-screen">
+      <h2 id="result-title"></h2>
+      <div class="score-circle" id="score-display"></div>
+      <p class="verdict" id="verdict-text"></p>
+      <button class="restart-btn" onclick="startQuiz()">Recommencer (pourquoi pas)</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        q: "Tu arrives à Narnia. Un lion te parle. Que fais-tu ?",
+        opts: ["Tu lui parles poliment", "Tu lui offres de la guimauve", "Tu fuis en criant", "Tu demandes si c'est Rick déguisé"],
+        correct: 3,
+        fb: "Bonne intuition. C'était effectivement Rick déguisé. Il teste les gens depuis des millénaires."
+      },
+      {
+        q: "Il fait –17°C. Tu n'as qu'une couverture en plastique. Que fais-tu ?",
+        opts: ["Tu la mets sur toi", "Tu en fais un igloo", "Tu la vends à une chimère", "Tu appelles ta mère"],
+        correct: 2,
+        fb: "Excellent. Les chimères de cette dimension adorent le plastique. T'aurais pu faire une fortune. Mais bon."
+      },
+      {
+        q: "Une créature à moustache te juge sur ton style vestimentaire. Tu réponds quoi ?",
+        opts: ["'Merci c'est Zara'", "'Toi t'as pas de miroir'", "Tu pleures", "Tu lui demandes son Instagram"],
+        correct: 3,
+        fb: "Sage. Elle a 4,2M d'abonnés. Ça aurait pu changer ta vie."
+      },
+      {
+        q: "Rick te dit : 'Sors par la porte rouge, c'est la sortie.' La porte est verte. Tu fais quoi ?",
+        opts: ["Tu sors par la rouge", "Tu sors par la verte", "Tu restes là pour l'éternité", "Tu peins la verte en rouge"],
+        correct: 3,
+        fb: "Génie. Rick était tellement sidéré qu'il t'a laissé rentrer chez toi. Première fois en 300 ans."
+      },
+      {
+        q: "Tu dois choisir une équipe de survie parmi ces options :",
+        opts: ["Morty (paniqué)", "Jerry (inutile mais sympa)", "Un croissant à jambes", "Summer (elle gère tout)"],
+        correct: 3,
+        fb: "Évident. Summer a réglé le problème en 7 minutes et lancé une startup dans la foulée."
+      }
+    ];
+
+    let current = 0, score = 0;
+
+    function startQuiz() {
+      current = 0; score = 0;
+      document.getElementById('quiz-screen').style.display = 'block';
+      document.getElementById('result-screen').style.display = 'none';
+      renderQuestion();
+    }
+
+    function renderProgress() {
+      const prog = document.getElementById('progress');
+      prog.innerHTML = questions.map((_, i) =>
+        `<div class="progress-dot ${i < current ? 'done' : i === current ? 'current' : ''}"></div>`
+      ).join('');
+    }
+
+    function renderQuestion() {
+      renderProgress();
+      const q = questions[current];
+      document.getElementById('q-num').textContent = `Question ${current + 1} / ${questions.length}`;
+      document.getElementById('q-text').textContent = q.q;
+      document.getElementById('q-feedback').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+
+      const container = document.getElementById('q-options');
+      container.innerHTML = q.opts.map((opt, i) =>
+        `<button class="option" onclick="answer(${i})">${opt}</button>`
+      ).join('');
+    }
+
+    function answer(index) {
+      const q = questions[current];
+      const buttons = document.querySelectorAll('.option');
+      buttons.forEach(b => b.disabled = true);
+      buttons[q.correct].classList.add('correct');
+      if (index !== q.correct) {
+        buttons[index].classList.add('wrong');
+      } else {
+        score++;
+      }
+      const fb = document.getElementById('q-feedback');
+      fb.textContent = q.fb;
+      fb.style.display = 'block';
+      document.getElementById('next-btn').style.display = 'inline-block';
+      document.getElementById('next-btn').textContent =
+        current < questions.length - 1 ? 'Question suivante →' : 'Voir mon destin';
+    }
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      current++;
+      if (current < questions.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      const screen = document.getElementById('result-screen');
+      screen.style.display = 'block';
+      document.getElementById('score-display').textContent = `${score}/${questions.length}`;
+
+      const verdicts = [
+        { title: "💀 T'es mort dès l'arrivée", text: "Narnia t'a rejeté en 3 secondes. Même les croissants ont eu pitié de toi. Rick a noté ça dans son carnet sous 'cas désespérés'." },
+        { title: "🐑 Tu survives… à peine", text: "Tu t'en sors mais les chimères te font encore des commentaires sur tes chaussures. Rick dit que t'as 'un potentiel nul mais régulier'." },
+        { title: "🌿 Survivant correct", text: "Pas mal. Tu rentres vivant, un peu traumatisé, mais vivant. Morty t'envie. C'est tout dire." },
+        { title: "🦁 Narnia t'a adopté", text: "Tu t'es si bien débrouillé que le lion t'a proposé de rester. Rick est jaloux. Il ne le montrera jamais." },
+        { title: "🌀 Rick est impressionné", text: "Score parfait. Rick dit 'mouai' mais il a mis ton score dans ses archives personnelles. C'est son équivalent d'un Oscars." }
+      ];
+
+      const v = verdicts[Math.min(score, 4)];
+      document.getElementById('result-title').textContent = v.title;
+      document.getElementById('verdict-text').textContent = v.text;
+      renderProgress();
+    }
+
+    startQuiz();
+  </script>
+
+</body>
+</html>

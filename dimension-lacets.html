@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Lacets – pH 5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#001520,#000f20);color:#88ccff;font-family:'Nunito',sans-serif;min-height:100vh;padding:20px;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:16px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#0077cc;color:white;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#44aaff;letter-spacing:.07em;margin-bottom:4px;}
+    .sub{color:#4488aa;margin-bottom:20px;font-size:.95rem;}
+    .info{margin-bottom:18px;font-weight:900;color:#88ccff;font-size:1.1rem;text-align:center;min-height:28px;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:320px;margin:0 auto 20px;}
+    .btn-color{width:140px;height:140px;border-radius:16px;border:none;cursor:pointer;font-size:2.2rem;transition:transform .1s,filter .1s,opacity .1s;font-family:'Nunito',sans-serif;}
+    .btn-color:disabled{cursor:default;}
+    .btn-color.lit{filter:brightness(1.8);transform:scale(1.08);}
+    .btn-color.dim{opacity:.35;}
+    #c0{background:#cc2244;}
+    #c1{background:#2255cc;}
+    #c2{background:#22cc44;}
+    #c3{background:#cccc22;}
+    .center-info{text-align:center;margin-top:10px;color:#88ccff;font-size:1rem;}
+    .play-btn{padding:12px 28px;background:#0077cc;border:none;border-radius:8px;color:white;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;font-size:1rem;margin-top:10px;}
+    .play-btn:hover{opacity:.85;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>👟 Dimension Lacets</h1>
+  <p class="sub">pH 5 — Les lacets ont fondu mais pas les chaussures. L'ordre des couleurs est la seule logique qui reste.</p>
+
+  <div class="info" id="info">Regarde la séquence, puis répète-la !</div>
+
+  <div class="grid">
+    <button class="btn-color" id="c0" onclick="playerClick(0)">🔴</button>
+    <button class="btn-color" id="c1" onclick="playerClick(1)">🔵</button>
+    <button class="btn-color" id="c2" onclick="playerClick(2)">🟢</button>
+    <button class="btn-color" id="c3" onclick="playerClick(3)">🟡</button>
+  </div>
+
+  <div class="center-info">
+    <div>Niveau : <strong id="level-disp">-</strong></div>
+    <button class="play-btn" id="start-btn">Commencer</button>
+  </div>
+
+  <script>
+    let seq=[], playerSeq=[], level=0, canPlay=false;
+
+    const btns=[0,1,2,3].map(i=>document.getElementById('c'+i));
+    const info=document.getElementById('info');
+
+    function setInfo(t){info.textContent=t;}
+    function setLevel(l){document.getElementById('level-disp').textContent=l;}
+
+    function flash(i,duration=400){
+      return new Promise(res=>{
+        btns[i].classList.add('lit');
+        setTimeout(()=>{btns[i].classList.remove('lit');res();},duration);
+      });
+    }
+
+    async function playSeq(){
+      canPlay=false;
+      setInfo('Regarde…');
+      btns.forEach(b=>{b.disabled=true;});
+      await new Promise(r=>setTimeout(r,600));
+      for(const i of seq){
+        await flash(i,500);
+        await new Promise(r=>setTimeout(r,200));
+      }
+      setInfo('À toi ! Répète la séquence');
+      playerSeq=[];
+      canPlay=true;
+      btns.forEach(b=>{b.disabled=false;});
+    }
+
+    async function startGame(){
+      document.getElementById('start-btn').style.display='none';
+      seq=[]; level=0;
+      nextLevel();
+    }
+
+    async function nextLevel(){
+      level++;
+      setLevel(level);
+      seq.push(Math.floor(Math.random()*4));
+      await playSeq();
+    }
+
+    function playerClick(i){
+      if(!canPlay)return;
+      playerSeq.push(i);
+      flash(i,200);
+      const idx=playerSeq.length-1;
+      if(playerSeq[idx]!==seq[idx]){
+        // Wrong
+        canPlay=false;
+        btns.forEach(b=>b.disabled=true);
+        setInfo(`❌ Raté au niveau ${level}. Rick dit "prévisible".`);
+        setTimeout(()=>{
+          document.getElementById('start-btn').style.display='inline-block';
+          document.getElementById('start-btn').textContent='Recommencer';
+          seq=[];level=0;setLevel('-');
+        },1500);
+        return;
+      }
+      if(playerSeq.length===seq.length){
+        canPlay=false;
+        setInfo(`✅ Correct ! Niveau ${level} réussi !`);
+        setTimeout(nextLevel,800);
+      }
+    }
+
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  </script>
+</body>
+</html>

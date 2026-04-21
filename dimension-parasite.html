@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Parasites – Memory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: radial-gradient(ellipse at center, #0d0020 0%, #06000f 60%, #000 100%);
+      color:#e0ccff; font-family:'Nunito',sans-serif;
+      min-height:100vh; padding:20px;
+    }
+
+    .retour {
+      display:inline-block; padding:8px 18px; margin-bottom:20px;
+      background:#7B00FF; color:white; font-weight:900;
+      border-radius:8px; text-decoration:none; transition:transform .15s;
+    }
+    .retour:hover { transform:scale(1.05); }
+
+    h1 {
+      font-family:'Bangers',cursive; font-size:2.5rem;
+      color:#cc88ff; letter-spacing:.07em;
+      text-shadow:0 0 20px rgba(123,0,255,.5);
+      margin-bottom:4px;
+    }
+    .subtitle { color:#aa88cc; margin-bottom:8px; }
+
+    .stats {
+      display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;
+    }
+    .stat {
+      padding:8px 16px; border-radius:8px;
+      background:rgba(123,0,255,.15); border:1px solid rgba(123,0,255,.3);
+      font-weight:900; color:#cc88ff;
+    }
+    .stat span { color:white; }
+
+    /* GRID */
+    #board {
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:12px;
+      max-width:520px;
+      margin:0 auto 24px;
+    }
+
+    .card {
+      aspect-ratio:1;
+      perspective:600px;
+      cursor:pointer;
+    }
+
+    .card-inner {
+      width:100%; height:100%;
+      position:relative;
+      transform-style:preserve-3d;
+      transition:transform .45s ease;
+      border-radius:12px;
+    }
+
+    .card.flipped .card-inner { transform:rotateY(180deg); }
+    .card.matched .card-inner { transform:rotateY(180deg); }
+    .card.matched .card-front { background:rgba(123,0,255,.3); border-color:rgba(123,0,255,.8); box-shadow:0 0 14px rgba(123,0,255,.4); }
+
+    .card-back, .card-front {
+      position:absolute; inset:0;
+      backface-visibility:hidden;
+      border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem;
+    }
+
+    .card-back {
+      background:rgba(30,0,60,.8);
+      border:2px solid rgba(123,0,255,.3);
+      font-size:1.8rem;
+      color:rgba(200,150,255,.4);
+      transition:border-color .2s;
+    }
+    .card:hover:not(.matched) .card-back { border-color:rgba(123,0,255,.7); }
+
+    .card-front {
+      background:rgba(50,0,100,.8);
+      border:2px solid rgba(123,0,255,.5);
+      transform:rotateY(180deg);
+    }
+
+    /* WIN SCREEN */
+    #win-screen {
+      display:none; text-align:center;
+      background:rgba(30,0,60,.9); border:1px solid rgba(123,0,255,.4);
+      border-radius:16px; padding:30px; max-width:480px; margin:0 auto;
+    }
+    #win-screen h2 { font-family:'Bangers',cursive; font-size:2.5rem; color:#cc88ff; letter-spacing:.06em; margin-bottom:10px; }
+    #win-screen p { color:#e0ccff; margin-bottom:20px; line-height:1.5; }
+    .play-again {
+      padding:12px 28px; background:#7B00FF; border:none;
+      border-radius:8px; color:white; font-weight:900; font-size:1rem;
+      cursor:pointer; transition:transform .15s;
+    }
+    .play-again:hover { transform:scale(1.05); }
+
+    @media (max-width:480px) {
+      #board { grid-template-columns:repeat(4,1fr); gap:8px; }
+      .card-back, .card-front { font-size:1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil" style="padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);">🏠 Accueil</a>
+
+  <h1>🧠 Dimension Parasites</h1>
+  <p class="subtitle">pH 8 — Ces souvenirs… sont-ils vrais ? Retrouve les paires avant que les parasites colonisent ta mémoire.</p>
+
+  <div class="stats">
+    <div class="stat">Paires : <span id="pairs-found">0</span>/8</div>
+    <div class="stat">Tentatives : <span id="attempts">0</span></div>
+    <div class="stat">⏱ <span id="timer-disp">0s</span></div>
+  </div>
+
+  <div id="board"></div>
+  <div id="win-screen">
+    <h2>✨ Mémoire sauvée !</h2>
+    <p id="win-text"></p>
+    <button class="play-again" onclick="initGame()">Rejouer</button>
+  </div>
+
+  <script>
+    const CARDS = ['🧠','🌀','🪐','👽','🔮','🎭','⚡','💜'];
+    // 8 paires = 16 cartes
+    let deck = [...CARDS, ...CARDS];
+
+    let flipped = [], matched = 0, attempts = 0, seconds = 0, timerInt;
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function initGame() {
+      deck = shuffle([...CARDS, ...CARDS]);
+      flipped = []; matched = 0; attempts = 0; seconds = 0;
+      clearInterval(timerInt);
+
+      document.getElementById('pairs-found').textContent = '0';
+      document.getElementById('attempts').textContent = '0';
+      document.getElementById('timer-disp').textContent = '0s';
+      document.getElementById('win-screen').style.display = 'none';
+
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+
+      deck.forEach((emoji, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.emoji = emoji;
+        card.dataset.index = i;
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-back">?</div>
+            <div class="card-front">${emoji}</div>
+          </div>`;
+        card.addEventListener('click', () => flipCard(card));
+        board.appendChild(card);
+      });
+
+      timerInt = setInterval(() => {
+        seconds++;
+        document.getElementById('timer-disp').textContent = seconds + 's';
+      }, 1000);
+    }
+
+    let busy = false;
+
+    function flipCard(card) {
+      if (busy || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      card.classList.add('flipped');
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        busy = true;
+        attempts++;
+        document.getElementById('attempts').textContent = attempts;
+
+        if (flipped[0].dataset.emoji === flipped[1].dataset.emoji) {
+          // Match !
+          setTimeout(() => {
+            flipped.forEach(c => c.classList.add('matched'));
+            flipped = [];
+            matched++;
+            document.getElementById('pairs-found').textContent = matched;
+            busy = false;
+            if (matched === CARDS.length) endGame();
+          }, 400);
+        } else {
+          // Pas de match
+          setTimeout(() => {
+            flipped.forEach(c => c.classList.remove('flipped'));
+            flipped = [];
+            busy = false;
+          }, 900);
+        }
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInt);
+      const efficiency = Math.round(CARDS.length / attempts * 100);
+      const verdicts = [
+        "Rick dit que t'as la mémoire d'une crevette. Mais une crevette avec de la volonté.",
+        "Pas mal. Les parasites ont essayé mais ta mémoire tient la route.",
+        "Bonne performance. Rick note : 'pas inutile'. C'est son plus grand compliment.",
+        "Impressionnant. Ta mémoire est immunisée. Rick envisage de t'employer."
+      ];
+      const vi = efficiency > 80 ? 3 : efficiency > 60 ? 2 : efficiency > 40 ? 1 : 0;
+      document.getElementById('win-text').innerHTML =
+        `Terminé en <strong>${seconds}s</strong> avec <strong>${attempts}</strong> tentatives.<br>${verdicts[vi]}`;
+      document.getElementById('win-screen').style.display = 'block';
+    }
+
+    initGame();
+  </script>
+
+</body>
+</html>

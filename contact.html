@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TED × Métavers(es) — Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style_contact.css" />
+</head>
+<body>
+
+  <div class="bg">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-noise"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap header-nav">
+      <nav class="nav">
+        <a href="index.html" class="nav-item">Accueil</a>
+        <a href="auteur.html" class="nav-item">Auteur</a>
+        <a href="contact.html" class="nav-item active">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="panel">
+      <h1>Me contacter</h1>
+      <p class="muted">Une question, une remarque, une idée de multivers un peu chelou ?<br>Laisse un message ici.</p>
+    </section>
+
+    <section class="panel contact-panel">
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="field">
+          <label for="nom">Nom</label>
+          <input type="text" id="nom" name="nom" placeholder="Ton nom">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="ton@email.com">
+        </div>
+        <div class="field">
+          <label for="sujet">Sujet</label>
+          <select id="sujet" name="sujet">
+            <option value="info">Informations</option>
+            <option value="collab">Collaboration</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" placeholder="Écris ton message ici..."></textarea>
+        </div>
+        <div class="field checkbox">
+          <input type="checkbox" id="newsletter" name="newsletter">
+          <label for="newsletter">M'inscrire à la newsletter</label>
+        </div>
+        <div class="cta-row">
+          <button type="submit" class="btn primary">Envoyer le message</button>
+          <button type="reset" class="btn ghost">Effacer</button>
+        </div>
+        <p id="form-msg" style="color:var(--accent);display:none;margin-top:10px;">✅ Message envoyé ! (démo)</p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap foot">
+      <span>© 2025 — Projet Multivers · Lou</span>
+    </div>
+    <a href="rick_morty.html" class="rick-morty">
+      <img src="img/rick.png" alt="Easter egg">
+    </a>
+  </footer>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      document.getElementById('form-msg').style.display = 'block';
+      setTimeout(() => { document.getElementById('form-msg').style.display = 'none'; }, 3000);
+    }
+  </script>
+
+</body>
+</html>

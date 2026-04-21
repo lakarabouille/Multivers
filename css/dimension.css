@@ -1,0 +1,69 @@
+/* === DIMENSION SHARED CSS === */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family:'Nunito',sans-serif;
+  background:#0a0a0a;
+  color:#eee;
+  min-height:100vh;
+  padding:16px 20px 40px;
+}
+
+/* NAV BUTTONS */
+.dim-nav {
+  display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;
+}
+.retour, .accueil {
+  display:inline-block; padding:8px 18px;
+  font-weight:900; border-radius:8px; text-decoration:none;
+  transition:transform .15s; font-size:.95rem;
+}
+.retour { background:#66CC00; color:black; }
+.accueil { background:rgba(255,255,255,.1); color:white; border:1px solid rgba(255,255,255,.2); }
+.retour:hover, .accueil:hover { transform:scale(1.05); }
+
+/* TITLE */
+.dim-title {
+  font-family:'Bangers',cursive; letter-spacing:.07em;
+  font-size:2.6rem; margin-bottom:4px;
+  text-shadow:0 0 20px currentColor;
+}
+.dim-subtitle { margin-bottom:24px; line-height:1.5; opacity:.75; font-size:.95rem; }
+
+/* GAME CARD */
+.game-card {
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  padding:24px;
+  max-width:620px;
+}
+
+/* COMMON BUTTON */
+.btn-game {
+  padding:12px 28px; border:none; border-radius:8px;
+  font-weight:900; font-size:1rem; cursor:pointer;
+  transition:transform .15s, opacity .15s;
+  font-family:'Nunito',sans-serif;
+}
+.btn-game:hover { transform:scale(1.05); }
+.btn-game:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+/* SCORE DISPLAY */
+.score-row {
+  display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;
+}
+.score-box {
+  padding:8px 14px; border-radius:8px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  font-weight:900; font-size:.95rem;
+}
+
+/* VERDICT */
+.verdict-box {
+  margin-top:18px; padding:14px 16px; border-radius:10px;
+  background:rgba(0,0,0,.35); font-style:italic;
+  line-height:1.5; border:1px solid rgba(255,255,255,.08);
+  display:none;
+}

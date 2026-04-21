@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft — Un métaverse créé par ses joueurs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/minecraft.css">
+</head>
+<body>
+
+<header class="mc-header">
+  <h1>Minecraft<span>Un métaverse créé par ses joueurs, bien avant que le mot existe</span></h1>
+</header>
+
+<main>
+
+  <section class="intro">
+    <p>Bien avant que le mot <strong>« métaverse »</strong> devienne un buzzword, des millions de joueurs construisaient déjà leurs propres mondes dans Minecraft.</p>
+    <p>Chaque serveur, chaque map, chaque seed est une dimension différente. Un multivers façonné par les joueurs.</p>
+  </section>
+
+  <section class="pillars">
+    <h2>Pourquoi Minecraft est un métaverse ?</h2>
+    <div class="pillars-grid">
+      <div class="pillar">
+        <h3>🌍 Un monde persistant</h3>
+        <p>Les mondes continuent d'exister même hors ligne.</p>
+      </div>
+      <div class="pillar">
+        <h3>👥 Une communauté</h3>
+        <p>Créateurs, serveurs, moddeurs : le cœur du système.</p>
+      </div>
+      <div class="pillar">
+        <h3>🧱 Des outils créatifs</h3>
+        <p>Blocs, redstone, commandes : liberté totale.</p>
+      </div>
+      <div class="pillar">
+        <h3>♾️ Des millions de mondes</h3>
+        <p>Chaque seed est une dimension unique.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="seed-section">
+    <h2>🔍 Explorer une dimension</h2>
+    <p>Entre une seed et observe le monde généré.<br><em>Psst… certains mots ouvrent des dimensions chelou. Rick t'a prévenu.</em></p>
+    <div class="seed-box">
+      <input type="text" id="seedInput" placeholder="Ex : village, chaos, 404, 123456 …">
+      <button id="seedBtn">Explorer</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 2025 — Projet Multivers / Minecraft</p>
+</footer>
+
+<img id="rick" src="img/rick.png" alt="Rick Sanchez">
+<div id="rick-bubble">Hé… certains mots ouvrent des dimensions cheloues.<br>J'dis ça comme ça… <i>essaie "TED" si t'as le courage.</i></div>
+
+<!-- OVERLAY RICKROLL -->
+<div id="ted-overlay">
+  <iframe id="rick-video" src="" allowfullscreen allow="autoplay"></iframe>
+  <button id="ted-close">Fermer cette dimension (si tu peux)</button>
+</div>
+
+<script>
+  const seedInput = document.getElementById("seedInput");
+  const seedBtn   = document.getElementById("seedBtn");
+  const tedOverlay = document.getElementById("ted-overlay");
+  const rickBubble = document.getElementById("rick-bubble");
+  const rickVideo  = document.getElementById("rick-video");
+  let rickSpoken = false;
+
+  seedInput.addEventListener("focus", () => {
+    if (!rickSpoken) {
+      rickBubble.style.display = "block";
+      rickSpoken = true;
+      setTimeout(() => rickBubble.style.display = "none", 6000);
+    }
+  });
+
+  seedBtn.addEventListener("click", () => {
+    const seed = seedInput.value.trim();
+    if (!seed) return;
+
+    if (seed.toLowerCase() === "ted") {
+      rickVideo.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+      tedOverlay.style.display = "flex";
+      return;
+    }
+
+    const url = "https://www.chunkbase.com/apps/seed-map#seed=" + encodeURIComponent(seed) + "&platform=java";
+    window.open(url, "_blank");
+  });
+
+  document.getElementById("ted-close").addEventListener("click", () => {
+    tedOverlay.style.display = "none";
+    rickVideo.src = "";
+  });
+
+  document.getElementById("rick").addEventListener("click", () => {
+    window.location.href = "rick_morty.html";
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Trop Stable – pH 11</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#001008,#001a0a);color:#88ffcc;font-family:'Nunito',sans-serif;min-height:100vh;padding:20px;display:flex;flex-direction:column;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:16px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#00aa66;color:black;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#44ffaa;letter-spacing:.07em;margin-bottom:4px;}
+    .sub{color:#336644;margin-bottom:24px;font-size:.95rem;}
+    .game-area{max-width:500px;margin:0 auto;width:100%;}
+    .timer-ring{width:80px;height:80px;margin:0 auto 16px;position:relative;}
+    .timer-ring svg{transform:rotate(-90deg);}
+    .timer-ring .bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:6;}
+    .timer-ring .prog{fill:none;stroke:#44ffaa;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .1s linear,stroke .3s;}
+    #timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:900;font-size:1.2rem;color:#44ffaa;}
+    .track{width:100%;height:24px;background:rgba(0,0,0,.3);border-radius:999px;position:relative;overflow:hidden;margin-bottom:12px;border:1px solid rgba(68,255,170,.2);}
+    .zone-ok{position:absolute;top:0;background:rgba(68,255,170,.25);height:100%;border:1px solid rgba(68,255,170,.4);}
+    .cursor{position:absolute;top:-6px;width:36px;height:36px;background:#44ffaa;border-radius:50%;transform:translateX(-50%);transition:left .04s linear;box-shadow:0 0 10px rgba(68,255,170,.5);}
+    .score-display{text-align:center;font-weight:900;font-size:1.1rem;margin-bottom:6px;}
+    .streak-display{text-align:center;color:#336644;font-size:.9rem;margin-bottom:18px;}
+    .start-screen{text-align:center;}
+    .start-screen h2{font-family:'Bangers',cursive;font-size:2rem;color:#44ffaa;letter-spacing:.06em;margin-bottom:10px;}
+    .start-screen p{color:#88ffcc;margin-bottom:18px;line-height:1.5;}
+    .play-btn{padding:12px 28px;background:#00aa66;border:none;border-radius:8px;color:black;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;font-size:1rem;}
+    .end-screen{text-align:center;display:none;}
+    .end-screen h2{font-family:'Bangers',cursive;font-size:2rem;color:#44ffaa;letter-spacing:.06em;margin-bottom:10px;}
+    .end-score{font-family:'Bangers',cursive;font-size:3rem;color:#44ffaa;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>⚖️ Dimension Stable</h1>
+  <p class="sub">pH 11 — Trop stable. Ça inquiète Rick. Mais ici, rester dans la zone verte = survivre.</p>
+
+  <div class="game-area">
+    <div id="start-screen" class="start-screen">
+      <h2>⚖️ Maintiens l'Équilibre</h2>
+      <p>Une balle oscille sur la piste.<br>Reste dans la <strong>zone verte</strong> le plus longtemps possible.<br>Déplace ta souris (ou toucher) pour contrôler la balle.</p>
+      <button class="play-btn" id="start-btn">Commencer</button>
+    </div>
+    <div id="game-screen" style="display:none">
+      <div class="timer-ring">
+        <svg width="80" height="80">
+          <circle class="bg" cx="40" cy="40" r="32"/>
+          <circle class="prog" id="timer-arc" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="0"/>
+        </svg>
+        <div id="timer-text">30</div>
+      </div>
+      <div class="score-display">Score : <span id="score-d">0</span></div>
+      <div class="streak-display">🟢 Dans la zone depuis : <span id="streak-d">0.0</span>s</div>
+      <div class="track" id="track">
+        <div class="zone-ok" id="zone-ok"></div>
+        <div class="cursor" id="cursor"></div>
+      </div>
+    </div>
+    <div id="end-screen" class="end-screen">
+      <h2 id="end-title">Terminé !</h2>
+      <div class="end-score" id="end-score"></div>
+      <p id="end-text" style="color:#88ffcc;margin:10px 0 18px;"></p>
+      <button class="play-btn" onclick="location.reload()">Rejouer</button>
+    </div>
+  </div>
+
+  <script>
+    const DURATION=30;
+    let running=false, timeLeft=DURATION, score=0, streakTime=0, streakInt, timerInt;
+    let cursorPos=50; // %
+    const track=document.getElementById('track');
+    const cursor=document.getElementById('cursor');
+    const zoneOk=document.getElementById('zone-ok');
+    // Zone verte au centre, largeur variable
+    let zoneCenter=50, zoneWidth=30;
+
+    function updateZone(){
+      zoneOk.style.left=(zoneCenter-zoneWidth/2)+'%';
+      zoneOk.style.width=zoneWidth+'%';
+    }
+
+    function isInZone(){
+      return cursorPos >= zoneCenter-zoneWidth/2 && cursorPos <= zoneCenter+zoneWidth/2;
+    }
+
+    function startGame(){
+      document.getElementById('start-screen').style.display='none';
+      document.getElementById('game-screen').style.display='block';
+      running=true; timeLeft=DURATION; score=0; streakTime=0; zoneWidth=30;
+      updateZone();
+      cursor.style.left='50%';
+
+      const arc=document.getElementById('timer-arc');
+      const CIRC=201;
+
+      timerInt=setInterval(()=>{
+        timeLeft-=0.1;
+        document.getElementById('timer-text').textContent=Math.ceil(timeLeft);
+        arc.style.strokeDashoffset=CIRC*(1-timeLeft/DURATION);
+        // Change zone color based on time
+        if(timeLeft<10) arc.style.stroke='#ff4444';
+        if(timeLeft<=0){endGame();}
+        // Zone gets narrower over time
+        zoneWidth=Math.max(10, 30-((DURATION-timeLeft)/DURATION)*18);
+        updateZone();
+        // Zone drifts
+        zoneCenter=50+Math.sin(timeLeft*0.3)*20;
+        updateZone();
+        if(isInZone()){
+          streakTime+=0.1;
+          score=Math.floor(streakTime*10);
+          document.getElementById('score-d').textContent=score;
+          document.getElementById('streak-d').textContent=streakTime.toFixed(1);
+        }
+      },100);
+    }
+
+    function endGame(){
+      running=false; clearInterval(timerInt);
+      document.getElementById('game-screen').style.display='none';
+      const end=document.getElementById('end-screen');
+      end.style.display='block';
+      const v=score>=250?'Rick dit : "Stable. Comme moi. Presque."':score>=150?'Pas mal. La zone t\'a respecté.':score>=50?'Tu as résisté un moment. Rick hausse les épaules.':'Trop instable. Cette dimension t\'a rejeté.';
+      document.getElementById('end-score').textContent=score+' pts';
+      document.getElementById('end-text').textContent=v;
+    }
+
+    // Contrôle
+    document.addEventListener('mousemove',e=>{
+      if(!running)return;
+      const rect=track.getBoundingClientRect();
+      cursorPos=Math.max(0,Math.min(100,(e.clientX-rect.left)/rect.width*100));
+      cursor.style.left=cursorPos+'%';
+    });
+    document.addEventListener('touchmove',e=>{
+      if(!running)return;
+      const rect=track.getBoundingClientRect();
+      cursorPos=Math.max(0,Math.min(100,(e.touches[0].clientX-rect.left)/rect.width*100));
+      cursor.style.left=cursorPos+'%';
+    },{passive:true});
+
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  </script>
+</body>
+</html>

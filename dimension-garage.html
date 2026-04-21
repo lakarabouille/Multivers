@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Garage de Rick – Répare le Portal Gun</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: linear-gradient(135deg, #001508 0%, #00240a 40%, #000d03 100%);
+      color:#00FFAA; font-family:'Nunito',sans-serif;
+      min-height:100vh; padding:24px 20px;
+    }
+
+    .retour {
+      display:inline-block; padding:8px 18px; margin-bottom:20px;
+      background:#00FFAA; color:black; font-weight:900;
+      border-radius:8px; text-decoration:none; transition:transform .15s;
+    }
+    .retour:hover { transform:scale(1.05); }
+
+    h1 {
+      font-family:'Bangers',cursive; font-size:2.6rem;
+      color:#00FFAA; letter-spacing:.07em;
+      text-shadow:0 0 20px rgba(0,255,170,.4); margin-bottom:4px;
+    }
+    .subtitle { color:#88ccaa; margin-bottom:24px; line-height:1.4; }
+
+    /* PORTAL GUN */
+    .portal-gun {
+      font-size:8rem; text-align:center;
+      margin:10px 0;
+      filter:drop-shadow(0 0 20px rgba(0,255,170,.3));
+      transition:filter .3s, transform .3s;
+    }
+    .portal-gun.glow {
+      filter:drop-shadow(0 0 40px rgba(0,255,170,.9));
+      animation:gunPulse .6s ease-in-out infinite alternate;
+    }
+    @keyframes gunPulse { from{transform:scale(1)} to{transform:scale(1.08)} }
+
+    /* PROGRESS BAR */
+    .prog-wrap {
+      max-width:500px; margin:0 auto 10px;
+      background:rgba(0,255,170,.1); border-radius:999px;
+      border:1px solid rgba(0,255,170,.2); height:14px; overflow:hidden;
+    }
+    .prog-bar {
+      height:100%; background:linear-gradient(90deg, #00FFAA, #00ff66);
+      border-radius:999px; transition:width .4s ease;
+    }
+    .prog-label { text-align:center; color:#00FFAA; font-weight:900; margin-bottom:20px; }
+
+    /* PARTS GRID */
+    .parts-title { font-family:'Bangers',cursive; font-size:1.4rem; letter-spacing:.05em; margin-bottom:12px; color:#00FFAA; }
+
+    .parts-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));
+      gap:12px; max-width:700px; margin:0 auto 24px;
+    }
+
+    .part {
+      background:rgba(0,30,15,.7); border:2px solid rgba(0,255,170,.2);
+      border-radius:12px; padding:16px 12px;
+      text-align:center; cursor:pointer;
+      transition:all .2s ease; user-select:none;
+    }
+    .part:hover:not(.collected) {
+      border-color:#00FFAA; background:rgba(0,255,170,.1);
+      transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,255,170,.2);
+    }
+    .part.collected {
+      border-color:#00FFAA; background:rgba(0,255,170,.15);
+      opacity:.7; cursor:default;
+      position:relative;
+    }
+    .part.collected::after {
+      content:'✓'; position:absolute;
+      top:8px; right:10px; color:#00FFAA; font-weight:900;
+    }
+
+    .part-icon { font-size:2.2rem; margin-bottom:6px; }
+    .part-name { font-weight:900; font-size:.9rem; color:#00FFAA; }
+    .part-desc { font-size:.78rem; color:#88ccaa; margin-top:4px; }
+
+    /* ASSEMBLE BUTTON */
+    #assemble-btn {
+      display:none; margin:0 auto 20px;
+      padding:14px 36px;
+      font-family:'Bangers',cursive; font-size:1.6rem; letter-spacing:.06em;
+      background:linear-gradient(135deg, #00FFAA, #00cc88);
+      border:none; border-radius:10px; color:black;
+      cursor:pointer; transition:transform .15s;
+      box-shadow:0 0 20px rgba(0,255,170,.4);
+    }
+    #assemble-btn:hover { transform:scale(1.06); }
+
+    /* WIN SCREEN */
+    #win-screen {
+      display:none; text-align:center;
+      background:rgba(0,20,10,.9); border:2px solid rgba(0,255,170,.4);
+      border-radius:16px; padding:30px; max-width:500px; margin:0 auto;
+    }
+    #win-screen h2 { font-family:'Bangers',cursive; font-size:2.4rem; color:#00FFAA; letter-spacing:.06em; margin-bottom:10px; }
+    #win-screen p { color:#b2ffe8; margin-bottom:20px; line-height:1.5; }
+    .replay-btn {
+      padding:12px 28px; background:#00FFAA; border:none;
+      border-radius:8px; color:black; font-weight:900; font-size:1rem;
+      cursor:pointer; transition:transform .15s;
+    }
+    .replay-btn:hover { transform:scale(1.05); }
+
+    /* RICK COMMENTAIRE */
+    #rick-comment {
+      max-width:500px; margin:16px auto 0;
+      padding:12px 16px; border-radius:10px;
+      background:rgba(0,0,0,.4); border:1px solid rgba(0,255,170,.2);
+      color:#88ccaa; font-style:italic; font-size:.95rem;
+      min-height:48px; text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil" style="padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);">🏠 Accueil</a>
+
+  <h1>🔧 Garage de Rick</h1>
+  <p class="subtitle">pH 12 — Le Portal Gun est cassé. Encore. Jerry a touché à quelque chose.<br>Collecte les pièces en cliquant dessus et assemble le Portal Gun !</p>
+
+  <div class="portal-gun" id="gun-display">🔫</div>
+
+  <div class="prog-wrap">
+    <div class="prog-bar" id="prog-bar" style="width:0%"></div>
+  </div>
+  <p class="prog-label" id="prog-label">0 / 5 pièces collectées</p>
+
+  <div style="max-width:700px;margin:0 auto">
+    <div class="parts-title">🧰 Pièces disponibles</div>
+    <div class="parts-grid" id="parts-grid"></div>
+  </div>
+
+  <div style="text-align:center">
+    <button id="assemble-btn">⚡ ASSEMBLER LE PORTAL GUN ⚡</button>
+  </div>
+
+  <div id="rick-comment">Rick te regarde travailler sans rien dire. Ce silence est soit un très bon soit un très mauvais signe.</div>
+
+  <div id="win-screen">
+    <h2>🌀 Portal Gun Réparé !</h2>
+    <p id="win-text"></p>
+    <button class="replay-btn" onclick="initGame()">Tout démonter et recommencer</button>
+  </div>
+
+  <script>
+    const PARTS = [
+      { icon:'⚡', name:'Condensateur de flux', desc:'Récupéré dans la poubelle de Jerry.' },
+      { icon:'🔋', name:'Batterie instable', desc:'Rick dit que c\'est "suffisamment sûr".' },
+      { icon:'💚', name:'Fluide de portail', desc:'pH : quelque part entre 1 et 15.' },
+      { icon:'🔩', name:'Vis quantique', desc:'La seule qui tient dans cette dimension.' },
+      { icon:'💡', name:'Diode dimensionnelle', desc:'Summer l\'avait prise pour un bijou.' }
+    ];
+
+    const rickComments = [
+      ["🔋 Ouais t'as pris la batterie. Touche pas au reste.", "⚡ Le condensateur. Classique. T'as le goût basique.", "💚 Le fluide. C'est littéralement dangereux et tu l'attrapes à mains nues. Respect, je suppose.", "🔩 La vis quantique. Seule une personne intéressante choisit ça en premier.", "💡 La diode. Summer est déçue. Moi non."]
+    ];
+
+    let collected = new Set();
+
+    function initGame() {
+      collected.clear();
+      document.getElementById('win-screen').style.display = 'none';
+      document.getElementById('assemble-btn').style.display = 'none';
+      document.getElementById('gun-display').textContent = '🔫';
+      document.getElementById('gun-display').classList.remove('glow');
+      document.getElementById('prog-bar').style.width = '0%';
+      document.getElementById('prog-label').textContent = '0 / 5 pièces collectées';
+      document.getElementById('rick-comment').textContent = 'Rick te regarde travailler sans rien dire. Ce silence est soit un très bon soit un très mauvais signe.';
+
+      const grid = document.getElementById('parts-grid');
+      grid.innerHTML = '';
+
+      PARTS.forEach((part, i) => {
+        const el = document.createElement('div');
+        el.className = 'part';
+        el.dataset.index = i;
+        el.innerHTML = `
+          <div class="part-icon">${part.icon}</div>
+          <div class="part-name">${part.name}</div>
+          <div class="part-desc">${part.desc}</div>`;
+        el.addEventListener('click', () => collectPart(i, el, part));
+        grid.appendChild(el);
+      });
+    }
+
+    function collectPart(i, el, part) {
+      if (collected.has(i)) return;
+      collected.add(i);
+      el.classList.add('collected');
+
+      // Rick comment
+      const commentPool = [
+        `${part.icon} Ouais, t'as pris ${part.name.toLowerCase()}. Logique.`,
+        `${part.icon} ${part.name}. Bon choix. Je n'aurais pas dit mieux.`,
+        `${part.icon} Tu prends ${part.name.toLowerCase()}. Rick lève les yeux au ciel mais approuve intérieurement.`,
+        `${part.icon} Cette pièce. Vraiment. Bon. Continue.`
+      ];
+      document.getElementById('rick-comment').textContent =
+        commentPool[Math.floor(Math.random() * commentPool.length)];
+
+      const count = collected.size;
+      document.getElementById('prog-bar').style.width = (count / PARTS.length * 100) + '%';
+      document.getElementById('prog-label').textContent = `${count} / ${PARTS.length} pièces collectées`;
+
+      if (count === PARTS.length) {
+        document.getElementById('gun-display').classList.add('glow');
+        document.getElementById('assemble-btn').style.display = 'inline-block';
+        document.getElementById('rick-comment').textContent = 'Toutes les pièces. Maintenant assemble. Et ne les fais pas tomber.';
+      }
+    }
+
+    document.getElementById('assemble-btn').addEventListener('click', () => {
+      document.getElementById('gun-display').textContent = '🌀';
+      document.getElementById('assemble-btn').style.display = 'none';
+      setTimeout(() => {
+        document.getElementById('win-text').textContent =
+          "Le Portal Gun ronronne. Rick dit 'mouai'. C'est son meilleur compliment. Tu peux maintenant ouvrir des portails vers n'importe quelle dimension. Évite la C-137.";
+        document.getElementById('win-screen').style.display = 'block';
+      }, 600);
+    });
+
+    initGame();
+  </script>
+
+</body>
+</html>

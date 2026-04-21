@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Acide – pH 2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:radial-gradient(ellipse at top,#1a0000,#000);color:#ff9999;font-family:'Nunito',sans-serif;min-height:100vh;overflow:hidden;}
+    .dim-nav{position:fixed;top:12px;left:12px;z-index:100;display:flex;gap:8px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#ff4444;color:white;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    .retour:hover,.accueil:hover{opacity:.85;}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#ff4444;letter-spacing:.07em;text-shadow:0 0 20px rgba(255,0,0,.5);position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;white-space:nowrap;}
+    .hud{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:14px;}
+    .hud-box{padding:7px 16px;border-radius:8px;background:rgba(0,0,0,.6);border:1px solid rgba(255,68,68,.3);font-weight:900;color:#ff9999;}
+    #lives-display{color:#ff4444;font-size:1.1rem;}
+    #game-area{width:100vw;height:100vh;position:relative;cursor:none;}
+    .drop{position:absolute;font-size:1.8rem;animation:fall linear forwards;pointer-events:none;}
+    @keyframes fall{from{top:-40px}to{top:100vh}}
+    #player{position:absolute;font-size:2.2rem;bottom:40px;transition:left .05s linear;pointer-events:none;user-select:none;}
+    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;text-align:center;padding:20px;}
+    #overlay h2{font-family:'Bangers',cursive;font-size:2.5rem;color:#ff4444;letter-spacing:.06em;margin-bottom:10px;}
+    #overlay p{color:#ffaaaa;margin-bottom:20px;line-height:1.5;max-width:440px;}
+    .play-btn{padding:12px 32px;background:#ff4444;border:none;border-radius:8px;color:white;font-weight:900;font-size:1rem;cursor:pointer;transition:transform .15s;font-family:'Nunito',sans-serif;}
+    .play-btn:hover{transform:scale(1.06);}
+    #damage-flash{position:fixed;inset:0;background:rgba(255,0,0,.3);pointer-events:none;opacity:0;z-index:150;transition:opacity .2s;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>☠ Pluie Acide</h1>
+  <div class="hud">
+    <div class="hud-box">Score : <span id="score-disp">0</span></div>
+    <div class="hud-box">Vies : <span id="lives-display">❤️❤️❤️</span></div>
+  </div>
+  <div id="game-area">
+    <div id="player">🧑</div>
+  </div>
+  <div id="damage-flash"></div>
+  <div id="overlay">
+    <h2>☠ Pluie Acide — pH 2</h2>
+    <p>Rick a renversé un bidon de liquide de portail ultra-acide. Il pleut de la dissolution.<br>Évite les gouttes. Tu as 3 vies.</p>
+    <button class="play-btn" id="start-btn">Jouer</button>
+  </div>
+
+  <script>
+    const area = document.getElementById('game-area');
+    const player = document.getElementById('player');
+    const overlay = document.getElementById('overlay');
+    const flash = document.getElementById('damage-flash');
+    let score=0, lives=3, running=false, spawnInt, scoreInt;
+    let playerX = window.innerWidth/2;
+    const DROPS = ['💧','🟢','🧪','☣️'];
+
+    function updateHUD(){
+      document.getElementById('score-disp').textContent=score;
+      document.getElementById('lives-display').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);
+    }
+
+    function startGame(){
+      score=0; lives=3; running=true;
+      overlay.style.display='none';
+      updateHUD();
+      spawnInt=setInterval(spawnDrop, 600);
+      scoreInt=setInterval(()=>{if(running){score++;updateHUD();}},500);
+    }
+
+    function spawnDrop(){
+      if(!running)return;
+      const el=document.createElement('div');
+      el.className='drop';
+      el.textContent=DROPS[Math.floor(Math.random()*DROPS.length)];
+      const x=Math.random()*(window.innerWidth-40);
+      const dur=Math.random()*2+1.5;
+      el.style.left=x+'px';
+      el.style.animationDuration=dur+'s';
+      area.appendChild(el);
+      el.addEventListener('animationend',()=>{
+        // check if hit player
+        const px=playerX, py=window.innerHeight-70;
+        const dx=parseFloat(el.style.left)-px;
+        const ey=window.innerHeight;
+        if(Math.abs(dx)<40 && Math.abs(ey-py)<60){
+          lives--; updateHUD();
+          flash.style.opacity='1';
+          setTimeout(()=>flash.style.opacity='0',200);
+          if(lives<=0)endGame();
+        }
+        el.remove();
+      });
+    }
+
+    function endGame(){
+      running=false;
+      clearInterval(spawnInt); clearInterval(scoreInt);
+      document.querySelectorAll('.drop').forEach(d=>d.remove());
+      const verdicts=['Rick note : "même les amibes font mieux". Brutal.','Survivant. Rick hausse les épaules.','Pas mal. Rick grommelle ce qui ressemble à un compliment.'];
+      const vi=Math.min(Math.floor(score/10),2);
+      overlay.innerHTML=`<h2>Game Over</h2><p>Score : <strong>${score}</strong><br>${verdicts[vi]}</p><button class="play-btn" onclick="location.reload()">Recommencer</button>`;
+      overlay.style.display='flex';
+    }
+
+    // Contrôle souris
+    document.addEventListener('mousemove',e=>{
+      playerX=e.clientX;
+      player.style.left=(e.clientX-20)+'px';
+    });
+    // Tactile
+    document.addEventListener('touchmove',e=>{
+      playerX=e.touches[0].clientX;
+      player.style.left=(e.touches[0].clientX-20)+'px';
+    },{passive:true});
+
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  </script>
+</body>
+</html>

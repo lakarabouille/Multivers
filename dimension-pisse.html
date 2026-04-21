@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Pisse – pH 15</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0a0800;color:#ffee00;font-family:'Nunito',sans-serif;overflow:hidden;height:100vh;}
+    .dim-nav{position:fixed;top:10px;left:10px;z-index:200;display:flex;gap:8px;}
+    .retour,.accueil{padding:6px 12px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.85rem;}
+    .retour{background:#ccaa00;color:black;}
+    .accueil{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.2);}
+    #game-canvas{display:block;width:100vw;height:100vh;}
+    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:100;}
+    #overlay h1{font-family:'Bangers',cursive;font-size:2.8rem;color:#ffee00;letter-spacing:.07em;margin-bottom:8px;}
+    #overlay p{color:#cccc44;margin-bottom:22px;max-width:400px;line-height:1.5;}
+    .play-btn{padding:14px 36px;font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:.06em;background:#ccaa00;border:none;border-radius:10px;color:black;cursor:pointer;transition:transform .15s;}
+    .play-btn:hover{transform:scale(1.06);}
+    #score-display{position:fixed;top:10px;right:16px;z-index:150;font-family:'Bangers',cursive;font-size:2rem;color:#ffee00;letter-spacing:.05em;text-shadow:0 0 10px rgba(255,220,0,.5);}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <div id="score-display">0</div>
+  <canvas id="game-canvas"></canvas>
+
+  <div id="overlay">
+    <h1>💛 Dimension Pisse</h1>
+    <p>pH 15 — "C'est de la pisse là." — Rick<br>Fais voler le cornichon cosmique entre les tuyaux.<br><strong>Espace / Clic / Toucher</strong> pour sauter.</p>
+    <button class="play-btn" id="start-btn">Jouer</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const scoreEl = document.getElementById('score-display');
+
+    let W, H, running = false, score = 0, best = 0;
+    let bird, pipes, frameId;
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function initGame() {
+      bird = { x: W * 0.25, y: H / 2, vy: 0, r: 22 };
+      pipes = [];
+      score = 0;
+      scoreEl.textContent = '0';
+      running = true;
+      overlay.style.display = 'none';
+      spawnPipe();
+      loop();
+    }
+
+    const GRAVITY = 0.45;
+    const JUMP = -9;
+    const PIPE_W = 70;
+    const GAP = 200;
+    const PIPE_SPEED = 3.5;
+
+    function spawnPipe() {
+      const minTop = 80, maxTop = H - GAP - 80;
+      const topH = Math.random() * (maxTop - minTop) + minTop;
+      pipes.push({ x: W + PIPE_W, topH, passed: false });
+    }
+
+    let frameCount = 0;
+    function loop() {
+      if (!running) return;
+      frameId = requestAnimationFrame(loop);
+      frameCount++;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Background
+      ctx.fillStyle = '#0a0800';
+      ctx.fillRect(0, 0, W, H);
+
+      // Stars
+      ctx.fillStyle = 'rgba(255,238,0,.3)';
+      for (let i = 0; i < 40; i++) {
+        const sx = ((i * 137 + frameCount * 0.2) % W);
+        const sy = ((i * 97) % H);
+        ctx.fillRect(sx, sy, 2, 2);
+      }
+
+      // Bird physics
+      bird.vy += GRAVITY;
+      bird.y += bird.vy;
+
+      // Hit top/bottom
+      if (bird.y - bird.r < 0 || bird.y + bird.r > H) { endGame(); return; }
+
+      // Draw bird (cornichon 🥒)
+      ctx.font = `${bird.r * 2}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.save();
+      ctx.translate(bird.x, bird.y);
+      ctx.rotate(Math.min(Math.max(bird.vy * 0.05, -0.5), 0.8));
+      ctx.fillText('🥒', 0, 0);
+      ctx.restore();
+
+      // Pipes
+      if (frameCount % 90 === 0) spawnPipe();
+
+      for (let i = pipes.length - 1; i >= 0; i--) {
+        const p = pipes[i];
+        p.x -= PIPE_SPEED;
+
+        // Draw top pipe
+        ctx.fillStyle = '#ccaa00';
+        ctx.strokeStyle = '#ffee00';
+        ctx.lineWidth = 2;
+        ctx.fillRect(p.x, 0, PIPE_W, p.topH);
+        ctx.strokeRect(p.x, 0, PIPE_W, p.topH);
+
+        // Draw bottom pipe
+        const botY = p.topH + GAP;
+        ctx.fillRect(p.x, botY, PIPE_W, H - botY);
+        ctx.strokeRect(p.x, botY, PIPE_W, H - botY);
+
+        // Score
+        if (!p.passed && p.x + PIPE_W < bird.x) {
+          p.passed = true; score++;
+          scoreEl.textContent = score;
+          if (score > best) best = score;
+        }
+
+        // Collision
+        if (bird.x + bird.r > p.x && bird.x - bird.r < p.x + PIPE_W) {
+          if (bird.y - bird.r < p.topH || bird.y + bird.r > p.topH + GAP) {
+            endGame(); return;
+          }
+        }
+
+        if (p.x + PIPE_W < 0) pipes.splice(i, 1);
+      }
+    }
+
+    function jump() {
+      if (!running) return;
+      bird.vy = JUMP;
+    }
+
+    function endGame() {
+      running = false;
+      cancelAnimationFrame(frameId);
+      const v = score >= 20 ? '🏆 Rick est silencieux. Signe de respect absolu.' :
+                score >= 10 ? '💛 Pas mal pour un cornichon cosmique.' :
+                score >= 5  ? '👍 Tu survis. Rick hausse les épaules.' :
+                              '💀 Le cornichon est retourné à l\'état de pisse. Rick commente rien.';
+      overlay.innerHTML = `
+        <h1>Game Over</h1>
+        <p>Score : <strong>${score}</strong> — Record : <strong>${best}</strong><br>${v}</p>
+        <button class="play-btn" onclick="initGame()">Rejouer</button>`;
+      overlay.style.display = 'flex';
+    }
+
+    document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); jump(); } });
+    document.addEventListener('click', e => { if (e.target.closest('.dim-nav') || e.target.closest('#overlay')) return; jump(); });
+    document.addEventListener('touchstart', e => { if (e.target.closest('.dim-nav') || e.target.closest('#overlay')) return; jump(); }, {passive:true});
+
+    document.getElementById('start-btn').addEventListener('click', e => { e.stopPropagation(); initGame(); });
+  </script>
+</body>
+</html>

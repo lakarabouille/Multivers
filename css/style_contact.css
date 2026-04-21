@@ -1,0 +1,27 @@
+/* ================= CONTACT ================= */
+.contact-panel { max-width:720px; }
+.contact-form { display:grid; gap:18px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-size:14px; color:var(--muted); }
+
+.contact-form input,
+.contact-form textarea,
+.contact-form select {
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  padding:12px 14px;
+  color:var(--text);
+  font-family:inherit;
+  font-size:14px;
+}
+.contact-form input:focus,
+.contact-form textarea:focus,
+.contact-form select:focus {
+  outline:none;
+  border-color:var(--accent);
+  background:rgba(92,255,177,.08);
+}
+.field.checkbox { flex-direction:row; align-items:center; gap:10px; }
+.field.checkbox input { width:auto; }
+.field.checkbox label { font-size:14px; color:var(--text); }

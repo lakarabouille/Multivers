@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Gravité Off</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: radial-gradient(ellipse at bottom, #000520 0%, #000010 60%, #000 100%);
+      color:#8cff9e; font-family:'Nunito',sans-serif;
+      min-height:100vh; overflow:hidden;
+    }
+
+    .retour {
+      position:fixed; top:16px; left:16px; z-index:100;
+      padding:8px 16px; background:#76ff03; color:black;
+      font-weight:900; border-radius:8px; text-decoration:none;
+      transition:transform .15s;
+    }
+    .retour:hover { transform:scale(1.05); }
+
+    /* HUD */
+    .hud {
+      position:fixed; top:16px; right:16px; z-index:100;
+      display:flex; gap:12px;
+    }
+    .hud-box {
+      padding:10px 16px; border-radius:10px;
+      background:rgba(0,10,0,.7); border:1px solid rgba(118,255,3,.3);
+      font-weight:900; font-size:1.1rem; color:#76ff03; min-width:80px; text-align:center;
+    }
+    .hud-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#4dcc00; }
+
+    /* GAME AREA */
+    #game-area {
+      width:100vw; height:100vh;
+      position:relative; overflow:hidden; cursor:crosshair;
+    }
+
+    /* START SCREEN */
+    #start-screen, #end-screen {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:rgba(0,5,0,.85); z-index:50; text-align:center; padding:20px;
+    }
+    #end-screen { display:none; }
+
+    h1 { font-family:'Bangers',cursive; font-size:2.8rem; color:#76ff03; letter-spacing:.08em; text-shadow:0 0 20px rgba(118,255,3,.6); }
+    .sub { color:#8cff9e; margin:10px 0 28px; line-height:1.5; max-width:500px; }
+
+    .start-btn, .restart-btn {
+      padding:14px 36px; font-family:'Bangers',cursive;
+      font-size:1.5rem; letter-spacing:.06em;
+      background:#76ff03; border:none; border-radius:10px;
+      color:black; cursor:pointer; transition:transform .15s;
+    }
+    .start-btn:hover, .restart-btn:hover { transform:scale(1.05); }
+
+    /* OBJECTS FLOTTANTS */
+    .obj {
+      position:absolute;
+      font-size:2.2rem;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .1s;
+      filter:drop-shadow(0 0 8px rgba(118,255,3,.4));
+      animation:floatUp linear forwards;
+    }
+    @keyframes floatUp {
+      from { transform:translateY(0) rotate(0deg); }
+      to   { transform:translateY(-110vh) rotate(360deg); }
+    }
+    .obj:hover { transform:scale(1.2); }
+
+    /* SCORE POP */
+    .pop {
+      position:absolute; font-weight:900; font-size:1.4rem;
+      color:#76ff03; pointer-events:none;
+      animation:popUp .7s ease forwards;
+    }
+    @keyframes popUp {
+      0%  { opacity:1; transform:translateY(0) scale(1); }
+      100%{ opacity:0; transform:translateY(-60px) scale(1.4); }
+    }
+
+    .final-score { font-family:'Bangers',cursive; font-size:4rem; color:#76ff03; margin:10px 0; }
+    .verdict { color:#b2ffcc; margin-bottom:20px; font-size:1.1rem; }
+
+    /* TIMER BAR */
+    #timer-bar-wrap {
+      position:fixed; bottom:0; left:0; width:100%; height:6px;
+      background:rgba(255,255,255,.1); z-index:100;
+    }
+    #timer-bar { height:100%; background:#76ff03; transition:width 1s linear; }
+  </style>
+</head>
+<body>
+
+  <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil" style="padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);">🏠 Accueil</a>
+
+  <div class="hud">
+    <div class="hud-box">
+      <div class="hud-label">Score</div>
+      <div id="score-disp">0</div>
+    </div>
+    <div class="hud-box">
+      <div class="hud-label">Temps</div>
+      <div id="time-disp">30</div>
+    </div>
+  </div>
+
+  <div id="game-area">
+
+    <div id="start-screen">
+      <h1>🚀 Gravité : OFF</h1>
+      <p class="sub">Rick a désactivé la gravité. Tes affaires s'envolent toutes.<br>Clique sur les objets avant qu'ils sortent de l'écran !<br><strong>30 secondes. Go.</strong></p>
+      <button class="start-btn" id="start-btn">Jouer</button>
+    </div>
+
+    <div id="end-screen">
+      <h1>Temps écoulé !</h1>
+      <div class="final-score" id="final-score">0</div>
+      <p class="verdict" id="final-verdict"></p>
+      <button class="restart-btn" id="restart-btn">Rejouer</button>
+    </div>
+
+  </div>
+
+  <div id="timer-bar-wrap" style="display:none">
+    <div id="timer-bar" style="width:100%"></div>
+  </div>
+
+  <script>
+    const EMOJIS = ['🍕','🎮','📱','👟','🎒','🧢','📚','🎵','🌀','⚡','🍔','🦆','🧸','🪐','🎯','🔮','🎲','🧃'];
+    const DURATION = 30;
+
+    let score = 0, timeLeft = DURATION, gameRunning = false, spawnInterval, timerInterval;
+
+    const gameArea = document.getElementById('game-area');
+    const scoreDisp = document.getElementById('score-disp');
+    const timeDisp  = document.getElementById('time-disp');
+    const timerBar  = document.getElementById('timer-bar');
+    const timerBarWrap = document.getElementById('timer-bar-wrap');
+
+    function startGame() {
+      score = 0; timeLeft = DURATION; gameRunning = true;
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('end-screen').style.display = 'none';
+      timerBarWrap.style.display = 'block';
+      scoreDisp.textContent = '0';
+      timeDisp.textContent = DURATION;
+      timerBar.style.width = '100%';
+
+      // Supprimer anciens objets
+      document.querySelectorAll('.obj, .pop').forEach(el => el.remove());
+
+      // Spawn objects
+      spawnInterval = setInterval(spawnObject, 700);
+
+      // Timer
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timeDisp.textContent = timeLeft;
+        timerBar.style.width = (timeLeft / DURATION * 100) + '%';
+        if (timeLeft <= 5) timerBar.style.background = '#ff4444';
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+
+      spawnObject(); // spawn immédiat
+    }
+
+    function spawnObject() {
+      if (!gameRunning) return;
+      const el = document.createElement('div');
+      el.className = 'obj';
+      el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+      const x = Math.random() * (window.innerWidth - 60) + 10;
+      const duration = Math.random() * 3 + 2.5; // 2.5–5.5s
+      el.style.left = x + 'px';
+      el.style.bottom = '0px';
+      el.style.animationDuration = duration + 's';
+
+      el.addEventListener('click', (e) => {
+        if (!gameRunning) return;
+        score++;
+        scoreDisp.textContent = score;
+
+        // Pop animation
+        const pop = document.createElement('div');
+        pop.className = 'pop';
+        pop.textContent = '+1';
+        pop.style.left = (e.clientX - 10) + 'px';
+        pop.style.top  = (e.clientY - 10) + 'px';
+        gameArea.appendChild(pop);
+        setTimeout(() => pop.remove(), 700);
+
+        el.remove();
+      });
+
+      el.addEventListener('animationend', () => el.remove());
+      gameArea.appendChild(el);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      clearInterval(spawnInterval);
+      clearInterval(timerInterval);
+      document.querySelectorAll('.obj').forEach(el => el.remove());
+      timerBarWrap.style.display = 'none';
+
+      const verdicts = [
+        "Rick dit que même Jerry ferait mieux. Et Jerry a les bras en carton.",
+        "Pas terrible. Mais t'as essayé. Rick appelle ça 'Morty niveau 0'.",
+        "Correct. T'aurais pu sauver tes affaires si t'avais arrêté de paniquer.",
+        "Pas mal du tout ! Rick a levé un sourcil. C'est son équivalent d'un standing ovation.",
+        "Incroyable. Rick te propose un stage. Rémunéré en liquide de portail."
+      ];
+      const vi = Math.min(Math.floor(score / 5), 4);
+
+      document.getElementById('final-score').textContent = score + ' attrapés';
+      document.getElementById('final-verdict').textContent = verdicts[vi];
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+  </script>
+
+</body>
+</html>

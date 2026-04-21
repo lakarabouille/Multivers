@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimension Roche – pH 3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0d0800,#1a0f00);color:#ffcc88;font-family:'Nunito',sans-serif;min-height:100vh;padding:16px 20px;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:16px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#cc7700;color:white;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#ffaa33;letter-spacing:.07em;margin-bottom:4px;}
+    .sub{color:#cc8844;margin-bottom:20px;font-size:.95rem;}
+    .hud{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+    .hud-box{padding:8px 16px;border-radius:8px;background:rgba(255,170,51,.1);border:1px solid rgba(255,170,51,.25);font-weight:900;color:#ffaa33;}
+    #rocks-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;max-width:500px;}
+    .rock{font-size:2.4rem;cursor:pointer;text-align:center;padding:14px;border-radius:12px;background:rgba(255,170,51,.08);border:1px solid rgba(255,170,51,.2);transition:all .15s;user-select:none;}
+    .rock:hover{background:rgba(255,170,51,.18);transform:scale(1.1);}
+    .rock.cracked{opacity:.5;cursor:default;filter:grayscale(.8);}
+    .rock.dissolved{opacity:0;pointer-events:none;}
+    #overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 20px;max-width:500px;}
+    #overlay h2{font-family:'Bangers',cursive;font-size:2.2rem;color:#ffaa33;letter-spacing:.06em;margin-bottom:10px;}
+    #overlay p{color:#ffcc88;margin-bottom:20px;line-height:1.5;}
+    .play-btn{padding:12px 28px;background:#cc7700;border:none;border-radius:8px;color:white;font-weight:900;font-size:1rem;cursor:pointer;font-family:'Nunito',sans-serif;}
+    .play-btn:hover{opacity:.85;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>🪨 Dimension Roche</h1>
+  <p class="sub">pH 3 — Le liquide dissout les cailloux en 4 secondes. Prouve que tu es plus rapide.</p>
+
+  <div id="overlay">
+    <h2>🪨 Casse les Roches</h2>
+    <p>Des roches tombent et le liquide va les dissoudre en 4 secondes.<br>Clique dessus le plus vite possible avant qu'elles disparaissent !<br>Tu as <strong>20 secondes</strong>.</p>
+    <button class="play-btn" id="start-btn">Jouer</button>
+  </div>
+
+  <div id="game-container" style="display:none">
+    <div class="hud">
+      <div class="hud-box">Score : <span id="score-disp">0</span></div>
+      <div class="hud-box">Temps : <span id="time-disp">20</span>s</div>
+      <div class="hud-box">Dissous : <span id="lost-disp">0</span></div>
+    </div>
+    <div id="rocks-grid"></div>
+  </div>
+
+  <script>
+    const ROCKS=['🪨','🗿','💎','🧱','⛰️'];
+    let score=0,lost=0,timeLeft=20,running=false,timerInt;
+    const rockTimers={};
+
+    function startGame(){
+      score=0;lost=0;timeLeft=20;running=true;
+      document.getElementById('overlay').style.display='none';
+      document.getElementById('game-container').style.display='block';
+      buildGrid();
+      timerInt=setInterval(()=>{
+        timeLeft--;
+        document.getElementById('time-disp').textContent=timeLeft;
+        if(timeLeft<=0)endGame();
+      },1000);
+      // Spawn rocks periodically
+      spawnRock();
+      setInterval(()=>{if(running)spawnRock();},800);
+    }
+
+    function buildGrid(){
+      const g=document.getElementById('rocks-grid');
+      g.innerHTML='';
+      for(let i=0;i<10;i++){
+        const el=document.createElement('div');
+        el.className='rock';el.dataset.index=i;
+        el.textContent='';
+        g.appendChild(el);
+      }
+    }
+
+    function spawnRock(){
+      const cells=document.querySelectorAll('.rock:not(.cracked):not(.dissolved)');
+      const empty=[...cells].filter(c=>c.textContent==='');
+      if(empty.length===0)return;
+      const cell=empty[Math.floor(Math.random()*empty.length)];
+      cell.textContent=ROCKS[Math.floor(Math.random()*ROCKS.length)];
+      cell.classList.remove('cracked');
+      cell.style.opacity='1';
+      const t=setTimeout(()=>{
+        if(cell.textContent!==''&&running){
+          cell.textContent=''; lost++;
+          document.getElementById('lost-disp').textContent=lost;
+        }
+      },4000);
+      rockTimers[cell.dataset.index]=t;
+      cell.onclick=()=>{
+        if(!running||cell.textContent==='')return;
+        clearTimeout(rockTimers[cell.dataset.index]);
+        cell.textContent=''; score++;
+        document.getElementById('score-disp').textContent=score;
+      };
+    }
+
+    function endGame(){
+      running=false; clearInterval(timerInt);
+      const verdicts=['Rick dit : "même les cailloux résistaient mieux".','Pas mal. T\'as sauvé quelques roches de la dissolution.','Rick note tes réflexes. Il dit "mouai". C\'est bien.'];
+      const vi=Math.min(Math.floor(score/5),2);
+      document.getElementById('game-container').style.display='none';
+      document.getElementById('overlay').innerHTML=`<h2>Terminé !</h2><p>Roches sauvées : <strong>${score}</strong><br>Dissoutes : ${lost}<br>${verdicts[vi]}</p><button class="play-btn" onclick="location.reload()">Rejouer</button>`;
+      document.getElementById('overlay').style.display='flex';
+    }
+
+    document.getElementById('start-btn').addEventListener('click',startGame);
+  </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Zone Neutre – pH 7</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0a0a00,#141400);color:#ffffaa;font-family:'Nunito',sans-serif;min-height:100vh;padding:20px;}
+    .dim-nav{display:flex;gap:8px;margin-bottom:16px;}
+    .retour,.accueil{padding:7px 14px;font-weight:900;border-radius:7px;text-decoration:none;font-size:.9rem;}
+    .retour{background:#aaaa00;color:black;}
+    .accueil{background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);}
+    h1{font-family:'Bangers',cursive;font-size:2.4rem;color:#ffff44;letter-spacing:.07em;margin-bottom:4px;}
+    .sub{color:#888800;margin-bottom:20px;font-size:.95rem;}
+    .info{text-align:center;margin-bottom:14px;font-weight:900;min-height:28px;}
+    #grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:300px;margin:0 auto 16px;}
+    .cell{width:54px;height:54px;border-radius:8px;background:rgba(255,255,0,.1);border:2px solid rgba(255,255,0,.2);font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;transition:background .15s;}
+    .cell:hover:not(.open){background:rgba(255,255,0,.2);}
+    .cell.open{cursor:default;background:rgba(0,0,0,.4);}
+    .cell.bomb-open{background:rgba(255,0,0,.3);}
+    .cell.safe{color:#ffff44;}
+    .btn{padding:12px 28px;border:none;border-radius:8px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;font-size:1rem;background:#aaaa00;color:black;}
+    .btn:hover{opacity:.85;}
+    .center{text-align:center;}
+  </style>
+</head>
+<body>
+  <div class="dim-nav">
+    <a href="rick_morty.html" class="retour">← Portail</a>
+    <a href="index.html" class="accueil">🏠 Accueil</a>
+  </div>
+  <h1>💥 Zone Neutre</h1>
+  <p class="sub">pH 7 — "Neutre" ne veut pas dire "inoffensif". Ça explose juste parfois. Grille 5×5, 5 bombes. Bonne chance.</p>
+  <div class="info" id="info">Clique pour commencer</div>
+  <div id="grid"></div>
+  <div class="center">
+    <div style="margin-bottom:10px;color:#ffffaa;">Bombes : <strong id="bombs-left">5</strong> | Cases sûres restantes : <strong id="safe-left">20</strong></div>
+    <button class="btn" id="new-btn">Nouvelle partie</button>
+  </div>
+
+  <script>
+    const SIZE=5, BOMBS=5;
+    let grid=[], revealed=0, gameOver=false;
+
+    function init(){
+      grid=Array(SIZE*SIZE).fill(0);
+      gameOver=false; revealed=0;
+      // Place bombs
+      let b=0;
+      while(b<BOMBS){
+        const i=Math.floor(Math.random()*SIZE*SIZE);
+        if(grid[i]!=='B'){grid[i]='B';b++;}
+      }
+      // Count neighbors
+      for(let i=0;i<SIZE*SIZE;i++){
+        if(grid[i]==='B')continue;
+        let c=0;
+        neighbors(i).forEach(n=>{if(grid[n]==='B')c++;});
+        grid[i]=c;
+      }
+      document.getElementById('info').textContent='Évite les bombes 💣';
+      document.getElementById('bombs-left').textContent=BOMBS;
+      document.getElementById('safe-left').textContent=SIZE*SIZE-BOMBS;
+      renderGrid();
+    }
+
+    function neighbors(i){
+      const r=Math.floor(i/SIZE),c=i%SIZE,res=[];
+      [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc])=>{
+        const nr=r+dr,nc=c+dc;
+        if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE)res.push(nr*SIZE+nc);
+      });
+      return res;
+    }
+
+    function renderGrid(){
+      const g=document.getElementById('grid');
+      g.innerHTML='';
+      grid.forEach((v,i)=>{
+        const el=document.createElement('div');
+        el.className='cell';
+        el.dataset.i=i;
+        el.textContent='';
+        el.addEventListener('click',()=>reveal(i));
+        g.appendChild(el);
+      });
+    }
+
+    function reveal(i){
+      if(gameOver)return;
+      const cells=document.querySelectorAll('.cell');
+      const el=cells[i];
+      if(el.classList.contains('open'))return;
+      el.classList.add('open');
+      if(grid[i]==='B'){
+        el.textContent='💣'; el.classList.add('bomb-open');
+        gameOver=true;
+        // Show all bombs
+        grid.forEach((v,j)=>{if(v==='B'){cells[j].textContent='💣';cells[j].classList.add('open','bomb-open');}});
+        document.getElementById('info').textContent='💥 BOOM ! Rick ricane.';
+        return;
+      }
+      el.classList.add('safe');
+      el.textContent=grid[i]>0?grid[i]:'·';
+      revealed++;
+      document.getElementById('safe-left').textContent=(SIZE*SIZE-BOMBS-revealed);
+      if(grid[i]===0){
+        neighbors(i).forEach(n=>{if(!document.querySelectorAll('.cell')[n].classList.contains('open'))reveal(n);});
+      }
+      if(revealed===SIZE*SIZE-BOMBS){
+        gameOver=true;
+        document.getElementById('info').textContent='🏆 Tu as survécu à la Zone Neutre ! Rick est surpris.';
+      }
+    }
+
+    document.getElementById('new-btn').addEventListener('click',init);
+    init();
+  </script>
+</body>
+</html>
