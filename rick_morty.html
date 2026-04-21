@@ -120,6 +120,9 @@
   </div>
 
   <script>
+    // ✅ Fix: enlève le portail vert quand on revient en arrière
+    window.addEventListener('pageshow', () => document.getElementById("portal").classList.remove('portal-active'));
+
     // Transition portail pour tous les liens pH
     const portal = document.getElementById("portal");
     document.querySelectorAll("a.ligne-ph").forEach(link => {
